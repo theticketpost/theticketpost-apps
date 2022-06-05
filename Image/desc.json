@@ -1,0 +1,6 @@
+{
+    "name": "Image",
+    "description": "Shows an image referenced by url",
+    "version": "0.0.1",
+    "author": "eipporko"
+}
