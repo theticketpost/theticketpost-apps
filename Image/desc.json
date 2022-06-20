@@ -3,7 +3,27 @@
     "description": "Shows an image referenced by url",
     "version": "0.0.1",
     "author": "eipporko",
+    "render_component": true,
     "configuration": true,
     "inspector": true,
-    "component": true
+    "configuration_template": [
+        {
+            "type": "checkbox",
+            "label": "Check Test",
+            "name": "check_test",
+            "value": true
+        },
+        {
+            "type": "number",
+            "label": "Number Test",
+            "name": "number_test",
+            "value": 0
+        },
+        {
+            "type": "text",
+            "label": "Text Test",
+            "name": "text_test",
+            "value": "Test"
+        }
+    ]
 }

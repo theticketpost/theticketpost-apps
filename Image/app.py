@@ -1,16 +1,13 @@
 from threading import Thread
 from loguru import logger
 import time
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, jsonify
 import os
 
 class App(Thread):
     def __init__(self, desc):
         Thread.__init__(self)
         self.desc = desc
-        self.configuration = True
-        self.component = True
-        self.inspector = True
         self.blueprint = Blueprint('imageapp_blueprint', __name__,
             template_folder='templates',
             static_folder='static')
@@ -18,9 +15,9 @@ class App(Thread):
             view_func=self.render_component,
             methods=['POST'])
         self.blueprint.add_url_rule('/api/apps/image/inspector',
-            view_func=self.render_inspector)
+            view_func=self.get_inspector_json)
         self.blueprint.add_url_rule('/api/apps/image/configuration',
-            view_func=self.render_configuration)
+            view_func=self.get_configuration_json)
 
 
     def run(self):
@@ -33,12 +30,16 @@ class App(Thread):
         return self.desc
 
 
-    def render_configuration(self):
-        return render_template('configuration.html')
+    def get_configuration_json(self):
+        if ( self.desc["configuration"] ):
+            return jsonify( self.desc["configuration_template"] )
+        return jsonify({})
 
 
-    def render_inspector(self):
-        return render_template('inspector.html')
+    def get_inspector_json(self):
+        if ( self.desc["configuration"] ):
+            return jsonify( self.desc["configuration_template"] )
+        return jsonify({})
 
 
     def render_component(self):
