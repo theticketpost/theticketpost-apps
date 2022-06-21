@@ -3,6 +3,7 @@ from loguru import logger
 import time
 from flask import Blueprint, render_template, jsonify
 import os
+import json
 
 class App(Thread):
     def __init__(self, desc):
@@ -32,6 +33,12 @@ class App(Thread):
 
     def get_configuration_json(self):
         if ( self.desc["configuration"] ):
+            path_to_config = os.path.join(os.path.dirname(__file__), 'config.json')
+            if os.path.exists(path_to_config):
+                with open(path_to_config) as config_file:
+                    data = json.load(config_file)
+                    return jsonify(data)
+
             return jsonify( self.desc["configuration_template"] )
         return jsonify({})
 
