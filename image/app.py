@@ -27,6 +27,11 @@ class App(Thread):
             time.sleep(30)
 
 
+    def refresh(self):
+        logger.debug("configuration file updated!")
+        return
+
+
     def get_description(self):
         return self.desc
 
