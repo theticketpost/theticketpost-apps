@@ -1,7 +1,7 @@
 from threading import Thread
 from loguru import logger
 import time
-from flask import Blueprint, render_template, jsonify
+from flask import Blueprint, render_template, jsonify, url_for
 import os
 import json
 
@@ -11,7 +11,8 @@ class App(Thread):
         self.desc = desc
         self.blueprint = Blueprint('imageapp_blueprint', __name__,
             template_folder='templates',
-            static_folder='static')
+            static_folder='static',
+            static_url_path='/imageapp_blueprint/static')
         self.blueprint.add_url_rule('/api/apps/image/component',
             view_func=self.render_component,
             methods=['POST'])
@@ -33,6 +34,8 @@ class App(Thread):
 
 
     def get_description(self):
+        if ( self.desc["render_component"] ):
+            self.desc["icon_url"] = url_for('imageapp_blueprint.static', filename='icon.svg')
         return self.desc
 
 
