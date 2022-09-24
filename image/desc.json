@@ -4,14 +4,14 @@
     "version": "0.0.1",
     "author": "eipporko",
     "render_component": true,
-    "configuration": false,
     "inspector": true,
     "inspector_template": [
         {
-            "type": "file",
+            "type": "image",
             "label": "image",
             "name": "image_filename",
             "value": "theticketpost_logo.svg"
         }
-    ]
+    ],
+    "configuration": false
 }

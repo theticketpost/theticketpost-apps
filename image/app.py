@@ -1,9 +1,13 @@
 from threading import Thread
 from loguru import logger
 import time
-from flask import Blueprint, render_template, jsonify, url_for, request
+from flask import Blueprint, render_template, jsonify, url_for, request, redirect
+from werkzeug.utils import secure_filename
 import os
 import json
+
+
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'svg', 'png'}
 
 class App(Thread):
     def __init__(self, desc):
@@ -27,6 +31,9 @@ class App(Thread):
             self.blueprint.add_url_rule('/api/apps/image/configuration',
                 view_func=self.get_configuration_json)
 
+        self.blueprint.add_url_rule('/api/apps/image/upload',
+            view_func=self.upload_file,
+            methods=['POST'])
 
 
     def run(self):
@@ -50,6 +57,7 @@ class App(Thread):
 
 
     def get_configuration_json(self):
+        logger.debug
         path_to_config = os.path.join(os.path.dirname(__file__), 'config.json')
         if os.path.exists(path_to_config):
             with open(path_to_config) as config_file:
@@ -61,6 +69,9 @@ class App(Thread):
 
 
     def get_inspector_json(self):
+        for attribute in self.desc["inspector_template"]:
+            if attribute["type"] == "image":
+                attribute["image_url"] = url_for('imageapp_blueprint.static', filename='files/' + attribute["value"])
         return jsonify( self.desc["inspector_template"] )
 
 
@@ -69,9 +80,42 @@ class App(Thread):
         content_type = request.headers.get('Content-Type')
         if (content_type == 'application/json'):
             config = request.json
-            img = ""
+            img_filename = ""
             for element in config:
                 if element["name"] == "image_filename":
-                    img = element["value"]
+                    img_filename = element["value"]
                     break
-            return render_template('component.html', img=img )
+            return render_template('component.html', img_filename=img_filename )
+
+
+    def allowed_file(self, filename):
+        return '.' in filename and \
+            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+    def json_response(seld, msg, code):
+        json = {}
+        json["msg"] = msg
+        json["code"] = code
+        return jsonify(json)
+
+
+    def upload_file(self):
+        if 'file' not in request.files:
+            msg = "No file part"
+            logger.debug(msg)
+            return self.json_response(msg, 400)
+
+        file = request.files['file']
+
+        if file.filename == '':
+            msg = "No selected file"
+            logger.debug(msg)
+            return self.json_response(msg, 400)
+
+        if file and self.allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(os.path.join(os.path.dirname(__file__), 'static/files'), filename))
+            msg = "Uploaded"
+            logger.debug(msg)
+            return self.json_response(msg, 200)
