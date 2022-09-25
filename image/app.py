@@ -71,7 +71,7 @@ class App(Thread):
     def get_inspector_json(self):
         for attribute in self.desc["inspector_template"]:
             if attribute["type"] == "image":
-                attribute["image_url"] = url_for('imageapp_blueprint.static', filename='files/' + attribute["value"])
+                attribute["url"] = url_for('imageapp_blueprint.static', filename='files/' + attribute["value"])
         return jsonify( self.desc["inspector_template"] )
 
 
@@ -93,10 +93,12 @@ class App(Thread):
             filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-    def json_response(seld, msg, code):
+    def json_response(self, msg, code, url = ""):
         json = {}
         json["msg"] = msg
         json["code"] = code
+        if ( url != "" ):
+            json["url"] = url
         return jsonify(json)
 
 
@@ -118,4 +120,4 @@ class App(Thread):
             file.save(os.path.join(os.path.join(os.path.dirname(__file__), 'static/files'), filename))
             msg = "Uploaded"
             logger.debug(msg)
-            return self.json_response(msg, 200)
+            return self.json_response(msg, 200, url_for('imageapp_blueprint.static', filename='files/' + file.filename))
