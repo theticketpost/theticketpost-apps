@@ -1,0 +1,17 @@
+{
+    "name": "{{cookiecutter.app_name}}",
+    "description": "{{cookiecutter.app_description}}",
+    "version": "{{cookiecutter.app_version}}",
+    "author": "{{cookiecutter.app_author}}",
+    "render_component": {{ cookiecutter.render_instance_on_ticket|lower }},
+    {% if cookiecutter.instance_configuration|lower == true %}
+    "inspector_template": [
+    ],
+    {% endif %}
+    "inspector": {{ cookiecutter.instance_configuration|lower }},
+    {% if cookiecutter.app_configuration|lower == true %}
+    "configuration_template": [
+    ],
+    {% endif %}
+    "configuration": {{ cookiecutter.app_configuration|lower }}
+}

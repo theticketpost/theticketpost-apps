@@ -1,0 +1,9 @@
+{
+  "app_name": "foo",
+  "app_description": "Lorem ipsum",
+  "app_version": "0.0.0",
+  "app_author": "John Doe",
+  "render_instance_on_ticket": true,
+  "instance_configuration": true,
+  "app_configuration": true
+}

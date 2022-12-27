@@ -1,0 +1,17 @@
+{
+    "name": "text",
+    "description": "Shows a custom text",
+    "version": "0.0.1",
+    "author": "eipporko",
+    "render_component": true,
+    "inspector": true,
+    "inspector_template": [
+        {
+            "type": "text",
+            "label": "text",
+            "name": "text_to_print",
+            "value": "Democracy Dies in Darkness"
+        }
+    ],
+    "configuration": false
+}

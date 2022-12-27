@@ -15,7 +15,7 @@ class App(Application):
             config = request.json
             img_filename = ""
             for element in config:
-                if element["name"] == "image_filename":
-                    img_filename = element["value"]
+                if element["name"] == "text_to_print":
+                    text_to_print = element["value"]
                     break
-            return render_template('component.html', img_filename=img_filename )
+            return render_template('component2.html', text_to_print=text_to_print )
