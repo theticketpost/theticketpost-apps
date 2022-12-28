@@ -4,7 +4,7 @@ from flask import render_template, request
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'svg', 'png'}
 
 class App(Application):
-    
+
     def __init__(self, desc):
         Application.__init__(self, __name__, __file__, desc)
 
@@ -18,4 +18,4 @@ class App(Application):
                 if element["name"] == "image_filename":
                     img_filename = element["value"]
                     break
-            return render_template('component.html', img_filename=img_filename )
+            return render_template('image/component.html', img_filename=img_filename )

@@ -4,7 +4,7 @@ from flask import render_template, request
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'svg', 'png'}
 
 class App(Application):
-    
+
     def __init__(self, desc):
         Application.__init__(self, __name__, __file__, desc)
 
@@ -18,4 +18,4 @@ class App(Application):
                 if element["name"] == "text_to_print":
                     text_to_print = element["value"]
                     break
-            return render_template('component2.html', text_to_print=text_to_print )
+            return render_template('text/component.html', text_to_print=text_to_print )
