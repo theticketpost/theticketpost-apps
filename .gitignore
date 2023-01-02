@@ -5,3 +5,4 @@ config.json
 *.png
 *.svg
 !theticketpost_logo.svg
+!{{cookiecutter.app_name}}/static/icon.svg

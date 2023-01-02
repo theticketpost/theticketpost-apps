@@ -4,14 +4,14 @@
     "version": "{{cookiecutter.app_version}}",
     "author": "{{cookiecutter.app_author}}",
     "render_component": {{ cookiecutter.render_instance_on_ticket|lower }},
-    {% if cookiecutter.instance_configuration|lower == true %}
+    {% if cookiecutter.render_instance_on_ticket|lower == "true" -%}
     "inspector_template": [
     ],
-    {% endif %}
+    {% endif -%}
     "inspector": {{ cookiecutter.instance_configuration|lower }},
-    {% if cookiecutter.app_configuration|lower == true %}
+    {% if cookiecutter.app_configuration|lower == "true" -%}
     "configuration_template": [
     ],
-    {% endif %}
+    {% endif -%}
     "configuration": {{ cookiecutter.app_configuration|lower }}
 }
