@@ -8,6 +8,30 @@
     ],
     "inspector": true,
     "configuration_template": [
+        {
+            "type": "text",
+            "label": "APIKey",
+            "name": "api_key",
+            "value": ""
+        },
+        {
+            "type": "text",
+            "label": "Unit",
+            "name": "unit",
+            "value": "metric"
+        },
+        {
+            "type": "text",
+            "label": "Lat",
+            "name": "lat",
+            "value": ""
+        },
+        {
+            "type": "text",
+            "label": "Lon",
+            "name": "lon",
+            "value": ""
+        }
     ],
     "configuration": true
 }
