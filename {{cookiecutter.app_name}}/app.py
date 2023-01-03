@@ -12,9 +12,9 @@ class App(Application):
     def render_component(self):
         #content_type = request.headers.get('Content-Type')
         #if (content_type == 'application/json'):
-        #    config = request.json
+        #    response = request.json
         #    img_filename = ""
-        #    for element in config:
+        #    for element in response["config"]:
         #        if element["name"] == "variable_name":
         #            variable_value = element["value"]
         #            break

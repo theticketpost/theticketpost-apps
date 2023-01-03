@@ -4,6 +4,7 @@
     "version": "{{cookiecutter.app_version}}",
     "author": "{{cookiecutter.app_author}}",
     "render_component": {{ cookiecutter.render_instance_on_ticket|lower }},
+    "refresh_component": {{ cookiecutter.update_instance_on_refresh|lower }},
     "inspector": {{ cookiecutter.instance_configuration|lower }},
     {% if cookiecutter.instance_configuration|lower == "true" -%}
     "inspector_template": [

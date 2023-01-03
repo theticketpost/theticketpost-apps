@@ -31,9 +31,11 @@ class App(Application):
         response = requests.get(url)
         data = json.loads(response.text)
 
-        return {"city_name": city_name, "current_temp": data["current"]["temp"]}
+        logger.info("Received forecast data")
+
+        return {"city_name": city_name, "current_temp": data["current"]["temp"], "dt": data["current"]["dt"] }
 
 
     def render_component(self):
         forecast = self.get_forecast()
-        return render_template('openweather/component.html', city_name = forecast["city_name"], current_temp=forecast["current_temp"])
+        return render_template('openweather/component.html', city_name = forecast["city_name"], current_temp=forecast["current_temp"], dt=forecast["dt"] )

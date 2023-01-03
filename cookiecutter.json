@@ -4,6 +4,7 @@
   "app_version": "0.0.0",
   "app_author": "John Doe",
   "render_instance_on_ticket": true,
+  "update_instance_on_refresh": false,
   "instance_configuration": true,
-  "app_configuration": true
+  "app_configuration": true,
 }
