@@ -1,3 +1,34 @@
-<div style="width: 100%; text-align: center; display: inline-block;" >{{city_name}}</div>
-<div style="width: 100%; text-align: center; display: inline-block;" >{{dt}}</div>
-<div style="width: 100%; text-align: center; display: inline-block;" >Temp: {{current_temp}}°C</div>
+<link rel="stylesheet" href={{ url_for('openweatherapp_blueprint.static', filename='style.css') }}>
+<div id="content_example">
+    <div id="current_weather">
+        <image id="current_icon" src={{ url_for('openweatherapp_blueprint.static', filename='weather_icons/' + weather.current_icon + '.svg') }} />
+        <div id="current_text">
+            <div id="city_name" class="capitalize">{{weather.city_name}}</div>
+            <div id="current_description" class="capitalize">{{weather.current_description}}</div>
+            <div id="current_temp">{{weather.current_temp}}°{% if weather.unit == 'metric'%}C{% else %}F{% endif %} </div>
+        </div>
+    </div>
+
+    <div id="forecast_weather">
+        {% for forecast in weather.forecast %}
+        <div class="forecast_weather_item">
+            <div>{{ forecast.hour }}</div>
+            <image class="item_icon" src={{ url_for('openweatherapp_blueprint.static', filename='weather_icons/' + forecast.weather.icon + '.svg') }} />
+            <div class="item_temp">{{forecast.temp}}°{% if weather.unit == 'metric'%}C{% else %}F{% endif %} </div>
+            <div class="capitalize">{{forecast.weather.description}}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="suntime">
+        <div class="suntime_item">
+            <image class="suntime_icon" src={{ url_for('openweatherapp_blueprint.static', filename='weather_icons/sunrise.svg') }} />
+            {{ weather.sunrise }}
+        </div>
+        <div class="suntime_item">
+            <image class="suntime_icon" src={{ url_for('openweatherapp_blueprint.static', filename='weather_icons/sunset.svg') }} />
+            {{ weather.sunset }}
+        </div>
+    </div>
+
+</div>

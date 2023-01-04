@@ -14,7 +14,7 @@ class App(Application):
         if (content_type == 'application/json'):
             response = request.json
             img_filename = ""
-            for element in response["config"]:
+            for element in response:
                 if element["name"] == "text_to_print":
                     text_to_print = element["value"]
                     break

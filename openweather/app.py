@@ -3,6 +3,7 @@ from flask import render_template, request
 from loguru import logger
 import json
 import requests
+import datetime
 
 
 class App(Application):
@@ -10,6 +11,10 @@ class App(Application):
     def __init__(self, desc):
         Application.__init__(self, __name__, __file__, desc)
 
+
+    def epoch_to_str(self, epoch_time):
+        timestamp = datetime.datetime.fromtimestamp(  epoch_time )
+        return timestamp.strftime("%H:%M")
 
     def get_forecast(self):
         # get app configuration parameters
@@ -33,9 +38,23 @@ class App(Application):
 
         logger.info("Received forecast data")
 
-        return {"city_name": city_name, "current_temp": data["current"]["temp"], "dt": data["current"]["dt"] }
+        current_temp = data["current"]["temp"]
+        current_icon = data["current"]["weather"][0]["icon"]
+        current_description = data["current"]["weather"][0]["description"]
+
+        hourly = data["hourly"]
+        forecast = []
+        logger.info("current hour" + self.epoch_to_str(data["current"]["dt"]))
+        for i in range(1, 11, 3):
+            forecast.append({ "hour": self.epoch_to_str(hourly[i]["dt"]), "temp": hourly[i]["temp"], "weather": hourly[i]["weather"][0] })
+
+
+        sunset = self.epoch_to_str(data["current"]["sunset"])
+        sunrise = self.epoch_to_str(data["current"]["sunrise"])
+
+        return {"unit": unit["value"], "city_name": city_name, "current_temp": current_temp, "current_icon": current_icon, "current_description": current_description, "forecast": forecast, "sunrise": sunrise, "sunset": sunset }
 
 
     def render_component(self):
-        forecast = self.get_forecast()
-        return render_template('openweather/component.html', city_name = forecast["city_name"], current_temp=forecast["current_temp"], dt=forecast["dt"] )
+        weather = self.get_forecast()
+        return render_template('openweather/component.html', weather = weather )

@@ -1,8 +1,4 @@
 __pycache__
 config.json
-*.jpg
-*.jpeg
-*.png
-*.svg
-!theticketpost_logo.svg
-!*/static/icon.svg
+*/static/files/
+!/image/static/files/theticketpost_logo.svg

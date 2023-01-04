@@ -1,0 +1,62 @@
+#content_example {
+    width: 100%;
+    text-align: center;
+    display: inline-block;
+}
+
+.capitalize {
+    text-transform: capitalize;
+}
+
+#current_weather {
+    display: flex;
+}
+
+#current_icon {
+    object-fit: contain;
+    align-self: flex-start;
+    width: 100px
+}
+
+#current_text {
+    flex: 1 1 auto;
+    text-align: left;
+}
+
+#current_description {
+    font-size: 1.5em;
+}
+
+#current_temp {
+    font-size: 1.25em;
+}
+
+#forecast_weather {
+    display: flex;
+    margin-top: 15px;
+}
+
+.forecast_weather_item {
+    flex: 1 1 0;
+    width: 0;
+    text-align: center;
+}
+
+.item_icon {
+    width: 50px
+}
+
+#suntime {
+    display: flex;
+    margin-top: 15px;
+}
+
+.suntime_icon {
+    width: 40px;
+}
+
+.suntime_item {
+    flex: 1 1 0;
+    width: 0;
+    text-align: center;
+}

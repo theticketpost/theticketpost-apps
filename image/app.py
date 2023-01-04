@@ -1,5 +1,6 @@
 from theticketpost.application import Application
 from flask import render_template, request
+from loguru import logger
 
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'svg', 'png'}
 
@@ -14,7 +15,8 @@ class App(Application):
         if (content_type == 'application/json'):
             response = request.json
             img_filename = ""
-            for element in response["config"]:
+            logger.info(response)
+            for element in response:
                 if element["name"] == "image_filename":
                     img_filename = element["value"]
                     break

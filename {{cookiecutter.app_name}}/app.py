@@ -14,7 +14,7 @@ class App(Application):
         #if (content_type == 'application/json'):
         #    response = request.json
         #    img_filename = ""
-        #    for element in response["config"]:
+        #    for element in response:
         #        if element["name"] == "variable_name":
         #            variable_value = element["value"]
         #            break
