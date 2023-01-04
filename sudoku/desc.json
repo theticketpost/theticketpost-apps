@@ -1,0 +1,12 @@
+{
+    "name": "sudoku",
+    "description": "Sudoku generator",
+    "version": "0.0.1",
+    "author": "eipporko",
+    "render_component": true,
+    "refresh_component": false,
+    "inspector": true,
+    "inspector_template": [
+    ],
+    "configuration": false
+}
