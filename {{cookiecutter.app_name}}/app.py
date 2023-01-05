@@ -1,3 +1,9 @@
+import os
+import sys
+
+current = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(current)
+
 from theticketpost.application import Application
 from flask import render_template, request
 
