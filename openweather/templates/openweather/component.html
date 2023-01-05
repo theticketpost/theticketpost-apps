@@ -3,8 +3,8 @@
     <div class="current_weather">
         <image class="current_icon" src={{ url_for('openweatherapp_blueprint.static', filename='weather_icons/' + weather.current_icon + '.svg') }} />
         <div class="current_text">
-            <div class="city_name" class="capitalize">{{weather.city_name}}</div>
-            <div class="current_description" class="capitalize">{{weather.current_description}}</div>
+            <div class="city_name capitalize">{{weather.city_name}}</div>
+            <div class="current_description capitalize">{{weather.current_description}}</div>
             <div class="current_temp">{{weather.current_temp}}°{% if weather.unit == 'metric'%}C{% else %}F{% endif %} </div>
         </div>
     </div>
