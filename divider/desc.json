@@ -1,0 +1,18 @@
+{
+    "name": "divider",
+    "description": "Inserts a line separator with a custom text on it.",
+    "version": "0.0.1",
+    "author": "eipporko",
+    "render_component": true,
+    "refresh_component": false,
+    "inspector": true,
+    "inspector_template": [
+        {
+            "type": "text",
+            "label": "text",
+            "name": "text_to_print",
+            "value": "Section Name"
+        }
+    ],
+    "configuration": false
+}

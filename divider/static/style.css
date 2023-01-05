@@ -1,0 +1,23 @@
+#content_example {
+    width: 100%;
+    text-align: center;
+    display: inline-block;
+}
+
+
+.divider_spacer {
+    margin-top: 25px;
+}
+
+.divider_title {
+    text-transform: uppercase;
+    font-size: 1.25em;
+    font-weight: bold;
+    text-align: left;
+}
+
+.divider_hr {
+    border: 1px solid black;
+    opacity: 1;
+    margin: 0px;
+}
