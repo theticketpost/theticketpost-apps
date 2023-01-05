@@ -1,17 +1,17 @@
 {
     "name": "text",
-    "description": "Shows a custom text",
+    "description": "Shows a custom text with the possibility of using strftime format codes.",
     "version": "0.0.1",
     "author": "eipporko",
     "render_component": true,
-    "refresh_component": false,
+    "refresh_component": true,
     "inspector": true,
     "inspector_template": [
         {
             "type": "text",
             "label": "text",
             "name": "text_to_print",
-            "value": "Democracy Dies in Darkness"
+            "value": "Democracy Dies in Darkness - %H:%M"
         }
     ],
     "configuration": false
