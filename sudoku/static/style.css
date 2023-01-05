@@ -1,0 +1,58 @@
+.sudoku_container {
+    width: 100%;
+    text-align: center;
+    display: inline-block;
+}
+
+.sudoku {
+    margin-top: 100%;
+}
+
+.sudoku_container li:nth-child(n):nth-child(-n+9) {
+    border-top-width: 4px;
+}
+.sudoku_container li:nth-child(n+73):nth-child(-n+81) {
+    border-bottom-width: 4px;
+}
+.sudoku_container li:nth-child(3n) {
+    border-right-width: 4px;
+}
+.sudoku_container li:nth-child(9n+1) {
+    border-left-width: 4px;
+}
+.sudoku_container li:nth-child(n+19):nth-child(-n+27) {
+    border-bottom-width: 4px;
+}
+.sudoku_container li:nth-child(n+46):nth-child(-n+54) {
+    border-bottom-width: 4px;
+}
+
+.sudoku_container ul {
+    display: grid;
+    grid-template-columns: repeat(9, 11%);
+    grid-template-rows: repeat(9, 11%);
+    justify-content: center;
+    align-content: center;
+    grid-gap: 0rem;
+    list-style: none;
+    padding: 0;
+    font-size: calc(1.5em);
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+.sudoku_container li {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    border: 1px solid black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sudoku_container li > span {
+    /* margin-top: 0.4rem; */
+}

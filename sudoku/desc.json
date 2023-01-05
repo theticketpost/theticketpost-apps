@@ -4,7 +4,7 @@
     "version": "0.0.1",
     "author": "eipporko",
     "render_component": true,
-    "refresh_component": false,
+    "refresh_component": true,
     "inspector": true,
     "inspector_template": [
     ],

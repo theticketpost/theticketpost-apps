@@ -1,7 +1,6 @@
 from theticketpost.application import Application
 from flask import render_template, request
 
-ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'svg', 'png'}
 
 class App(Application):
 
