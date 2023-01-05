@@ -17,7 +17,6 @@ class App(Application):
         return timestamp.strftime("%H:%M")
 
     def get_forecast(self, lon, lat):
-        logger.info("lon: %s lat: %s" % (lon, lat))
         # get app configuration parameters
         response = self.get_configuration_json()
         json_object = json.loads(response.data)
