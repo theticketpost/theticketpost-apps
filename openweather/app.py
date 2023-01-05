@@ -16,23 +16,22 @@ class App(Application):
         timestamp = datetime.datetime.fromtimestamp(  epoch_time )
         return timestamp.strftime("%H:%M")
 
-    def get_forecast(self):
+    def get_forecast(self, lon, lat):
+        logger.info("lon: %s lat: %s" % (lon, lat))
         # get app configuration parameters
         response = self.get_configuration_json()
         json_object = json.loads(response.data)
         api_key = next((item for item in json_object if item["name"] == "api_key"), None)
-        lat = next((item for item in json_object if item["name"] == "lat"), None)
-        lon = next((item for item in json_object if item["name"] == "lon"), None)
         unit = next((item for item in json_object if item["name"] == "unit"), None)
 
         # request city name from lat & lon
-        url = "http://api.openweathermap.org/geo/1.0/reverse?lat=%s&lon=%s&limit=1&appid=%s" % (lat["value"], lon["value"], api_key["value"])
+        url = "http://api.openweathermap.org/geo/1.0/reverse?lat=%s&lon=%s&limit=1&appid=%s" % (lat, lon, api_key["value"])
         response = requests.get(url)
         data = json.loads(response.text)
         city_name = data[0]["name"]
 
         # request data forecast to openweather
-        url = "https://api.openweathermap.org/data/2.5/onecall?lat=%s&lon=%s&appid=%s&units=%s" % (lat["value"], lon["value"], api_key["value"], unit["value"])
+        url = "https://api.openweathermap.org/data/2.5/onecall?lat=%s&lon=%s&appid=%s&units=%s" % (lat, lon, api_key["value"], unit["value"])
         response = requests.get(url)
         data = json.loads(response.text)
 
@@ -56,5 +55,14 @@ class App(Application):
 
 
     def render_component(self):
-        weather = self.get_forecast()
-        return render_template('openweather/component.html', weather = weather )
+        content_type = request.headers.get('Content-Type')
+        if (content_type == 'application/json'):
+            response = request.json
+            img_filename = ""
+            for element in response:
+                if element["name"] == "lon":
+                    lon = element["value"]
+                if element["name"] == "lat":
+                    lat = element["value"]
+            weather = self.get_forecast(lon, lat)
+            return render_template('openweather/component.html', weather = weather )

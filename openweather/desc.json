@@ -6,6 +6,18 @@
     "render_component": true,
     "refresh_component": true,
     "inspector_template": [
+        {
+            "type": "text",
+            "label": "Lat",
+            "name": "lat",
+            "value": "43.4439"
+        },
+        {
+            "type": "text",
+            "label": "Lon",
+            "name": "lon",
+            "value": "-8.3661"
+        }
     ],
     "inspector": true,
     "configuration_template": [
@@ -20,18 +32,6 @@
             "label": "Unit",
             "name": "unit",
             "value": "metric"
-        },
-        {
-            "type": "text",
-            "label": "Lat",
-            "name": "lat",
-            "value": ""
-        },
-        {
-            "type": "text",
-            "label": "Lon",
-            "name": "lon",
-            "value": ""
         }
     ],
     "configuration": true
