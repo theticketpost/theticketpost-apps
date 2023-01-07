@@ -37,6 +37,22 @@ Apps available to use with theticketpost-server
             "label": "File Label",
             "name": "file_var",
             "value": "default_value"
+        },
+        {
+            "type": "select",
+            "label": "Select Label",
+            "name": "select_var",
+            "value": "option_value_1",
+            "options": [
+                {
+                    "value": "option_value_1",
+                    "description": "option_description_1"
+                },
+                {
+                    "value": "option_value_2",
+                    "description": "option_description_2"
+                }
+            ]
         }
     ]
 }

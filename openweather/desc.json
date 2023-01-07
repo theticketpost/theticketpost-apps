@@ -28,10 +28,20 @@
             "value": ""
         },
         {
-            "type": "text",
+            "type": "select",
             "label": "Unit",
             "name": "unit",
-            "value": "metric"
+            "value": "metric",
+            "options": [
+                {
+                    "value": "metric",
+                    "description": "metric"
+                },
+                {
+                    "value": "imperial",
+                    "description": "imperial"
+                }
+            ]
         }
     ],
     "configuration": true

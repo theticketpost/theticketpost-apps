@@ -42,7 +42,6 @@ class App(Application):
 
         hourly = data["hourly"]
         forecast = []
-        logger.info("current hour" + self.epoch_to_str(data["current"]["dt"]))
         for i in range(1, 11, 3):
             forecast.append({ "hour": self.epoch_to_str(hourly[i]["dt"]), "temp": hourly[i]["temp"], "weather": hourly[i]["weather"][0] })
 
