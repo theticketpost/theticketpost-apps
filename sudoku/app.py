@@ -45,4 +45,4 @@ class App(Application):
                 if element["name"] == "level":
                     level = element["value"]
                     break
-            return render_template('sudoku/component.html', numbers = self.generate_sudoku(level))
+            return render_template('sudoku/component.html', numbers = self.generate_sudoku(level), level=level)
