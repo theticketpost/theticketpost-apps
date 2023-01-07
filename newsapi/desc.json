@@ -1,0 +1,14 @@
+{
+    "name": "newsapi",
+    "description": "Articles and breaking news headlines from news sources. Powered by NewsAPI",
+    "version": "0.0.1",
+    "author": "eipporko",
+    "render_component": true,
+    "refresh_component": true,
+    "inspector": true,
+    "inspector_template": [
+    ],
+    "configuration_template": [
+    ],
+    "configuration": true
+}
