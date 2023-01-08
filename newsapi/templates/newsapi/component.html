@@ -1,1 +1,11 @@
-<div style="width: 100%; text-align: center; display: inline-block;" >Test message</div>
+<link rel="stylesheet" href={{ url_for('newsapiapp_blueprint.static', filename='style.css') }}>
+<div class="newsapi_container">
+    {% for article in articles %}
+    <div class="newsapi_entry">
+        <div class="newsapi_source">- {{ article.source.id }}</div>
+        <div class="newsapi_headline">{{ article.title }}</div>
+        <div class="newsapi_date">{{ article.publishedAt }}</div>
+        <!-- <image class="newsapi_img" src={{ article.urlToImage }}> -->
+    </div>
+    {% endfor %}
+</div>

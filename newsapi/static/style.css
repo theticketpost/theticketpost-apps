@@ -1,0 +1,29 @@
+.newsapi_container {
+    width: 100%;
+    text-align: center;
+    display: inline-block;
+}
+
+.newsapi_entry {
+    margin-bottom: 20px;
+}
+
+.newsapi_source {
+    text-align: left;
+}
+
+.newsapi_headline {
+    text-align: left;
+    font-family: Postoni,BodoniSvtyTwoITCTT-Book,georgia,serif;
+    line-height: 1.1;
+    font-size: 1.5em;
+    font-weight: 700;
+}
+
+.newsapi_date {
+    text-align: left;
+}
+
+.newsapi_img {
+    width: 100%;
+}

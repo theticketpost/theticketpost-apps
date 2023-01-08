@@ -7,8 +7,387 @@
     "refresh_component": true,
     "inspector": true,
     "inspector_template": [
+        {
+            "type": "select",
+            "label": "Country",
+            "name": "country",
+            "value": "",
+            "options": [
+                {
+                    "value": "",
+                    "description": "None"
+                },
+                {
+                    "value": "ae",
+                    "description": "ae - United Arab Emirates"
+                },
+                {
+                    "value": "ar",
+                    "description": "ar - Argentina"
+                },
+                {
+                    "value": "at",
+                    "description": "at - Austria"
+                },
+                {
+                    "value": "au",
+                    "description": "au - Australia"
+                },
+                {
+                    "value": "be",
+                    "description": "be - Belgium"
+                },
+                {
+                    "value": "bg",
+                    "description": "bg - Bulgaria"
+                },
+                {
+                    "value": "br",
+                    "description": "br - Brazil"
+                },
+                {
+                    "value": "ca",
+                    "description": "ca - Canada"
+                },
+                {
+                    "value": "ch",
+                    "description": "ch - Switzerland"
+                },
+                {
+                    "value": "cn",
+                    "description": "cn - China"
+                },
+                {
+                    "value": "co",
+                    "description": "co - Colombia"
+                },
+                {
+                    "value": "cu",
+                    "description": "cu - Cuba"
+                },
+                {
+                    "value": "cz",
+                    "description": "cz - Czechia"
+                },
+                {
+                    "value": "de",
+                    "description": "de - Germany"
+                },
+                {
+                    "value": "eg",
+                    "description": "eg - Egypt"
+                },
+                {
+                    "value": "fr",
+                    "description": "fr - France"
+                },
+                {
+                    "value": "gb",
+                    "description": "gb - Great Britain"
+                },
+                {
+                    "value": "gr",
+                    "description": "gr - Greece"
+                },
+                {
+                    "value": "hk",
+                    "description": "hk - Hong Kong"
+                },
+                {
+                    "value": "hu",
+                    "description": "hu - Hungary"
+                },
+                {
+                    "value": "id",
+                    "description": "id - Indonesia"
+                },
+                {
+                    "value": "ie",
+                    "description": "ie - Ireland"
+                },
+                {
+                    "value": "il",
+                    "description": "il - Israel"
+                },
+                {
+                    "value": "in",
+                    "description": "in - India"
+                },
+                {
+                    "value": "it",
+                    "description": "it - Italy"
+                },
+                {
+                    "value": "jp",
+                    "description": "jp - Japan"
+                },
+                {
+                    "value": "kr",
+                    "description": "kr - Korea"
+                },
+                {
+                    "value": "lt",
+                    "description": "lt - Lithuania"
+                },
+                {
+                    "value": "lv",
+                    "description": "lv - Latvia"
+                },
+                {
+                    "value": "ma",
+                    "description": "ma - Morocco"
+                },
+                {
+                    "value": "mx",
+                    "description": "mx - Mexico"
+                },
+                {
+                    "value": "my",
+                    "description": "my - Malaysia"
+                },
+                {
+                    "value": "ng",
+                    "description": "ng - Nigeria"
+                },
+                {
+                    "value": "nl",
+                    "description": "nl - Netherlands"
+                },
+                {
+                    "value": "no",
+                    "description": "no - Norway"
+                },
+                {
+                    "value": "nz",
+                    "description": "nz - New Zealand"
+                },
+                {
+                    "value": "ph",
+                    "description": "ph - Philippines"
+                },
+                {
+                    "value": "pl",
+                    "description": "po - Poland"
+                },
+                {
+                    "value": "pt",
+                    "description": "pt - Portugal"
+                },
+                {
+                    "value": "ro",
+                    "description": "ro - Romania"
+                },
+                {
+                    "value": "rs",
+                    "description": "rs - Serbia"
+                },
+                {
+                    "value": "ru",
+                    "description": "ru - Russia"
+                },
+                {
+                    "value": "sa",
+                    "description": "sa - Saudi Arabia"
+                },
+                {
+                    "value": "se",
+                    "description": "se - Sweden"
+                },
+                {
+                    "value": "sg",
+                    "description": "sg - Singapore"
+                },
+                {
+                    "value": "si",
+                    "description": "si - Slovenia"
+                },
+                {
+                    "value": "sk",
+                    "description": "sk - Slovakia"
+                },
+                {
+                    "value": "th",
+                    "description": "th - Thailand"
+                },
+                {
+                    "value": "tr",
+                    "description": "tr - Türkiye"
+                },
+                {
+                    "value": "tw",
+                    "description": "tw - Taiwan"
+                },
+                {
+                    "value": "ua",
+                    "description": "ua - Ukraine"
+                },
+                {
+                    "value": "us",
+                    "description": "us - United States"
+                },
+                {
+                    "value": "ve",
+                    "description": "ve - Venezuela"
+                },
+                {
+                    "value": "za",
+                    "description": "za - South Africa"
+                }
+            ]
+        },
+        {
+            "type": "select",
+            "label": "Category",
+            "name": "category",
+            "value": "",
+            "options": [
+                {
+                    "value": "",
+                    "description": "None"
+                },
+                {
+                    "value": "business",
+                    "description": "Business"
+                },
+                {
+                    "value": "entertainment",
+                    "description": "Entertainment"
+                },
+                {
+                    "value": "general",
+                    "description": "General"
+                },
+                {
+                    "value": "health",
+                    "description": "Health"
+                },
+                {
+                    "value": "science",
+                    "description": "Science"
+                },
+                {
+                    "value": "sports",
+                    "description": "Sports"
+                },
+                {
+                    "value": "technology",
+                    "description": "Technology"
+                }
+
+            ]
+        },
+        {
+            "type": "text",
+            "label": "Keywords",
+            "name": "keywords",
+            "value": ""
+        },
+        {
+            "type": "text",
+            "label": "Domains (eg bbc.co.uk, techcrunch.com)",
+            "name": "domains",
+            "value": ""
+        },
+        {
+            "type": "select",
+            "label": "Language",
+            "name": "language",
+            "value": "",
+            "options": [
+                {
+                    "value": "",
+                    "description": "None"
+                },
+                {
+                    "value": "ar",
+                    "description": "ar - Arabic"
+                },
+                {
+                    "value": "de",
+                    "description": "de - German"
+                },
+                {
+                    "value": "en",
+                    "description": "en - English"
+                },
+                {
+                    "value": "es",
+                    "description": "es - Spanish"
+                },
+                {
+                    "value": "fr",
+                    "description": "fr - French"
+                },
+                {
+                    "value": "he",
+                    "description": "he - Hebrew"
+                },
+                {
+                    "value": "it",
+                    "description": "it - Italian"
+                },
+                {
+                    "value": "nl",
+                    "description": "nl - Dutch"
+                },
+                {
+                    "value": "no",
+                    "description": "no - Norwegian"
+                },
+                {
+                    "value": "pt",
+                    "description": "pt - Portuguese"
+                },
+                {
+                    "value": "ru",
+                    "description": "ru - Russian"
+                },
+                {
+                    "value": "sv",
+                    "description": "sv - Swedish"
+                },
+                {
+                    "value": "ud",
+                    "description": "ud - Turkish-German"
+                },
+                {
+                    "value": "zh",
+                    "description": "zh - Chinese"
+                }
+            ]
+        },
+        {
+            "type": "select",
+            "label": "Sort by",
+            "name": "sort_by",
+            "value": "",
+            "options": [
+                {
+                    "value": "",
+                    "description": "None"
+                },
+                {
+                    "value": "relevancy",
+                    "description": "relevancy - Articles more closely related to keywords come first"
+                },
+                {
+                    "value": "popularity",
+                    "description": "popularity - Articles from popular sources and publishers come first"
+                },
+                {
+                    "value": "publishedAt",
+                    "description": "published at - Newest articles come first"
+                }
+            ]
+        }
     ],
     "configuration_template": [
+        {
+            "type": "text",
+            "label": "APIKey",
+            "name": "api_key",
+            "value": ""
+        }
     ],
     "configuration": true
 }
