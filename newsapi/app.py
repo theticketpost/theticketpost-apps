@@ -21,7 +21,7 @@ class App(Application):
     def parse_search_parameters(self, response):
         country = ""
         category = ""
-        keywords = ""
+        q = ""
         domains = ""
         language = ""
         sort_by = ""
@@ -31,8 +31,8 @@ class App(Application):
                     country = "&country=" + element["value"]
                 elif element["name"] == "category":
                     category = "&category=" + element["value"]
-                elif element["name"] == "keywords":
-                    keywords = "&q=" + urllib.parse.quote(element["value"])
+                elif element["name"] == "q":
+                    q = "&q=" + urllib.parse.quote(element["value"])
                 elif element["name"] == "domains":
                     domains = "&domains=" + element["value"]
                 elif element["name"] == "language":
@@ -40,7 +40,7 @@ class App(Application):
                 elif element["name"] == "sort_by":
                     sort_by = "&sortBy=" + element["value"]
 
-        return {"country": country, "category": category, "keywords": keywords, "domains": domains, "language": language, "sort_by": sort_by}
+        return {"country": country, "category": category, "q": q, "domains": domains, "language": language, "sort_by": sort_by}
 
 
     def get_headlines(self, json_search_parameters):
@@ -53,16 +53,16 @@ class App(Application):
 
         search_parameters = self.parse_search_parameters(json_search_parameters)
         if search_parameters["domains"]:
-            url = "https://newsapi.org/v2/everything?apiKey=%s&pageSize=5&from=%s%s%s%s%s" % (api_key["value"], last24h, search_parameters["keywords"], search_parameters["domains"], search_parameters["language"], search_parameters["sort_by"])
+            url = "https://newsapi.org/v2/everything?apiKey=%s&pageSize=5&from=%s%s%s%s%s" % (api_key["value"], last24h, search_parameters["q"], search_parameters["domains"], search_parameters["language"], search_parameters["sort_by"])
         else:
-            url = "https://newsapi.org/v2/top-headlines?apiKey=%s&pageSize=5&from=%s%s%s%s" % (api_key["value"], last24h, search_parameters["country"], search_parameters["category"], search_parameters["keywords"])
+            url = "https://newsapi.org/v2/top-headlines?apiKey=%s&pageSize=5&from=%s%s%s%s" % (api_key["value"], last24h, search_parameters["country"], search_parameters["category"], search_parameters["q"])
 
         response = requests.get(url)
         data = json.loads(response.text)
 
         for article in data["articles"]:
             timestamp = datetime.datetime.strptime(article["publishedAt"],"%Y-%m-%dT%H:%M:%SZ")
-            article["publishedAt"] = timestamp.strftime("%B %-d, %Y at %-I:%-M %p %Z")
+            article["publishedAt"] = timestamp.strftime("%B %-d, %Y at %-I:%M %p %Z")
             if not article["source"]["id"]:
                 article["source"]["id"] = article["source"]["name"]
 

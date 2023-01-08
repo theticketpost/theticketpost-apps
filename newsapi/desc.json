@@ -278,8 +278,8 @@
         },
         {
             "type": "text",
-            "label": "Keywords",
-            "name": "keywords",
+            "label": "q",
+            "name": "q",
             "value": ""
         },
         {
@@ -368,7 +368,7 @@
                 },
                 {
                     "value": "relevancy",
-                    "description": "relevancy - Articles more closely related to keywords come first"
+                    "description": "relevancy - Articles more closely related to q come first"
                 },
                 {
                     "value": "popularity",
