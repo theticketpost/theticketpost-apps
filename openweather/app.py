@@ -60,7 +60,7 @@ class App(Application):
             for element in response:
                 if element["name"] == "lon":
                     lon = element["value"]
-                if element["name"] == "lat":
+                elif element["name"] == "lat":
                     lat = element["value"]
             weather = self.get_forecast(lon, lat)
             return render_template('openweather/component.html', weather = weather )
