@@ -18,7 +18,7 @@ class App(Application):
         #content_type = request.headers.get('Content-Type')
         #if (content_type == 'application/json'):
         #    response = request.json
-        #    img_filename = ""
+        #    variable_value = ""
         #    for element in response:
         #        if element["name"] == "variable_name":
         #            variable_value = element["value"]
