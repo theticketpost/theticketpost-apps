@@ -1,5 +1,6 @@
 <link rel="stylesheet" href={{ url_for('newsapiapp_blueprint.static', filename='style.css') }}>
 <div class="newsapi_container">
+    {% if (articles is defined) and articles %}
     {% for article in articles %}
     <div class="newsapi_entry">
         <div class="newsapi_source">- {{ article.source.id }}</div>
@@ -8,4 +9,7 @@
         <!-- <image class="newsapi_img" src={{ article.urlToImage }}> -->
     </div>
     {% endfor %}
+    {% else %}
+    <div>There are not news for you that fit with the searching filter.</div>
+    {% endif %}
 </div>

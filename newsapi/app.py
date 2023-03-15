@@ -74,4 +74,5 @@ class App(Application):
         if (content_type == 'application/json'):
             response = request.json
             articles = self.get_headlines(response)
+            print(articles)
             return render_template('newsapi/component.html', articles=articles)
