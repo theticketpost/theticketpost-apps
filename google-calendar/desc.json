@@ -1,0 +1,18 @@
+{
+    "name": "google-calendar",
+    "description": "Print the appointments you have for the day in google calendar",
+    "version": "0.0.1",
+    "author": "eipporko",
+    "render_component": true,
+    "refresh_component": true,
+    "inspector": false,
+    "configuration_template": [
+        {
+            "type": "google-credentials",
+            "label": "Google Credentials",
+            "name": "google-credentials",
+            "value": []
+        }
+    ],
+    "configuration": true
+}
