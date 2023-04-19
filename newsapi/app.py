@@ -59,7 +59,6 @@ class App(Application):
 
         response = requests.get(url)
         data = json.loads(response.text)
-
         for article in data["articles"]:
             timestamp = datetime.datetime.strptime(article["publishedAt"],"%Y-%m-%dT%H:%M:%SZ")
             article["publishedAt"] = timestamp.strftime("%B %-d, %Y at %-I:%M %p %Z")

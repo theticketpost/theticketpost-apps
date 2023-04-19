@@ -5,13 +5,15 @@
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,
-    "inspector": false,
+    "inspector": true,
+    "inspector_template": [],
     "configuration_template": [
         {
             "type": "google-credentials",
             "label": "Google Credentials",
             "name": "google-credentials",
-            "value": []
+            "value": [],
+            "scopes": ["https://www.googleapis.com/auth/calendar"]
         }
     ],
     "configuration": true
