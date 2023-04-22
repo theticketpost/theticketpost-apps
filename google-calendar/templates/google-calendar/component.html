@@ -1,37 +1,55 @@
 <link rel="stylesheet" href={{ url_for('google-calendarapp_blueprint.static', filename='style.css') }}>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
 <div class="google_calendar_container">
-    {% if events_by_date|length == 0 %}
-    <p>No upcoming events.</p>
-    {% else %}
+  {% if events_by_date|length == 0 %}
+  <p>No upcoming events.</p>
+  {% else %}
+    {% set future_events = [] %}
     {% for date, events in events_by_date|dictsort %}
-      <div class="google_calendar_date">
-      {% if date != datetime.date.today() %}
-        <h3>{{ date }}</h3>
-      {% endif %}
-        <ul class="google_calendar_list">
-          {% for event in events %}
-          <li class="google_calendar_item">
-              <div class="google_calendar_time">
-              {% if event.all_day %}
-                  All day
-              {% else %}
-                  {{ event.start_time_str }} - {{ event.end_time_str }}
-              {% endif %}
-              </div>
-              <div class="google_calendar_info">
-                <div class="google_calendar_title">{{ event.summary }}</div>
-                {% if event.location %}
-                <div class="google_calendar_location">
-                  <i class="fas fa-map-marker-alt location-icon"></i>
-                  {{ event.location }}
+      {% if date == datetime.date.today() %}
+        <div class="google_calendar_date">
+          <ul class="google_calendar_list">
+            {% for event in events %}
+            <li class="google_calendar_item">
+                <div class="google_calendar_time">
+                {% if event.all_day %}
+                    All day
+                {% else %}
+                    {{ event.start_time_str }} - {{ event.end_time_str }}
+                {% endif %}
                 </div>
-              {% endif %}
-              </div>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
+                <div class="google_calendar_info">
+                  <div class="google_calendar_title">{{ event.summary }}</div>
+                  {% if event.location %}
+                  <div class="google_calendar_location">
+                    <i class="fas fa-map-marker-alt location-icon"></i>
+                    {{ event.location }}
+                  </div>
+                  {% endif %}
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% elif date > datetime.date.today() %}
+        {% for event in events %}
+          {% set _ = future_events.append({'date': date, 'event': event}) %}
+        {% endfor %}
+      {% endif %}
     {% endfor %}
+    {% if future_events %}
+      <h3 class="future-events-heading">Upcoming Events</h3>
+      <ul class="google_calendar_list">
+        {% for item in future_events %}
+        <li class="google_calendar_item future">
+          <div class="google_calendar_time">
+            {{ item.date.strftime('%m/%d') }} - {{ item.event.summary }}
+          </div>
+        </li>
+        {% endfor %}      
+      </ul>
+    {% endif %}
   {% endif %}
 </div>
+
+
