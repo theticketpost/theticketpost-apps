@@ -59,13 +59,16 @@ class App(Application):
 
         response = requests.get(url)
         data = json.loads(response.text)
-        for article in data["articles"]:
-            timestamp = datetime.datetime.strptime(article["publishedAt"],"%Y-%m-%dT%H:%M:%SZ")
-            article["publishedAt"] = timestamp.strftime("%B %-d, %Y at %-I:%M %p %Z")
-            if not article["source"]["id"]:
-                article["source"]["id"] = article["source"]["name"]
+        if data["status"] != "error":
+            for article in data["articles"]:
+                timestamp = datetime.datetime.strptime(article["publishedAt"],"%Y-%m-%dT%H:%M:%SZ")
+                article["publishedAt"] = timestamp.strftime("%B %-d, %Y at %-I:%M %p %Z")
+                if not article["source"]["id"]:
+                    article["source"]["id"] = article["source"]["name"]
 
-        return data["articles"]
+            return data["articles"]
+        else:
+            return []
 
 
     def render_component(self):
