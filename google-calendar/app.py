@@ -128,6 +128,6 @@ class App(Application):
 
         context = {
             'events_by_date': events,
-            'datetime': datetime  # <-- Agrega esta línea
+            'datetime': datetime
         }
         return render_template('google-calendar/component.html', **context)
