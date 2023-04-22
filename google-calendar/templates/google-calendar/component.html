@@ -1,3 +1,37 @@
 <link rel="stylesheet" href={{ url_for('google-calendarapp_blueprint.static', filename='style.css') }}>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
 <div class="google_calendar_container">
+    {% if events_by_date|length == 0 %}
+    <p>No upcoming events.</p>
+    {% else %}
+    {% for date, events in events_by_date|dictsort %}
+      <div class="google_calendar_date">
+      {% if date != datetime.date.today() %}
+        <h3>{{ date }}</h3>
+      {% endif %}
+        <ul class="google_calendar_list">
+          {% for event in events %}
+          <li class="google_calendar_item">
+              <div class="google_calendar_time">
+              {% if event.all_day %}
+                  All day
+              {% else %}
+                  {{ event.start_time_str }} - {{ event.end_time_str }}
+              {% endif %}
+              </div>
+              <div class="google_calendar_info">
+                <div class="google_calendar_title">{{ event.summary }}</div>
+                {% if event.location %}
+                <div class="google_calendar_location">
+                  <i class="fas fa-map-marker-alt location-icon"></i>
+                  {{ event.location }}
+                </div>
+              {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endfor %}
+  {% endif %}
 </div>

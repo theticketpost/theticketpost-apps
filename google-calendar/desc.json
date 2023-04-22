@@ -6,7 +6,14 @@
     "render_component": true,
     "refresh_component": true,
     "inspector": true,
-    "inspector_template": [],
+    "inspector_template": [
+        {
+            "type": "number",
+            "label": "Days to show (including today)",
+            "name": "days",
+            "value": 1
+        }
+    ],
     "configuration_template": [
         {
             "type": "google-credentials",
