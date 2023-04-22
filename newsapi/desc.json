@@ -11,7 +11,7 @@
             "type": "select",
             "label": "Country",
             "name": "country",
-            "value": "",
+            "value": "us",
             "options": [
                 {
                     "value": "",
@@ -239,7 +239,7 @@
             "type": "select",
             "label": "Category",
             "name": "category",
-            "value": "",
+            "value": "business",
             "options": [
                 {
                     "value": "",
