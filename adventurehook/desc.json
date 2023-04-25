@@ -1,0 +1,573 @@
+{
+    "name": "adventurehook",
+    "description": "Module that generates story hooks for tabletop role-playing games in seconds, saving time for game masters and enhacing the player experience. Simply input senven categories and get an exciting and unique story hook in no time.",
+    "version": "0.0.1",
+    "author": "eipporko",
+    "render_component": true,
+    "refresh_component": true,
+    "inspector": true,
+    "inspector_template": [
+        {
+            "type": "select",
+            "label": "Language",
+            "name": "language",
+            "value": "english",
+            "options": [
+                {
+                    "value": "arabic",
+                    "description": "ar - Arabic"
+                },
+                {
+                    "value": "german",
+                    "description": "de - German"
+                },
+                {
+                    "value": "english",
+                    "description": "en - English"
+                },
+                {
+                    "value": "spanish",
+                    "description": "es - Spanish"
+                },
+                {
+                    "value": "french",
+                    "description": "fr - French"
+                },
+                {
+                    "value": "hebrew",
+                    "description": "he - Hebrew"
+                },
+                {
+                    "value": "italian",
+                    "description": "it - Italian"
+                },
+                {
+                    "value": "dutch",
+                    "description": "nl - Dutch"
+                },
+                {
+                    "value": "norwegian",
+                    "description": "no - Norwegian"
+                },
+                {
+                    "value": "portuguese",
+                    "description": "pt - Portuguese"
+                },
+                {
+                    "value": "russian",
+                    "description": "ru - Russian"
+                },
+                {
+                    "value": "swedish",
+                    "description": "sv - Swedish"
+                },
+                {
+                    "value": "turkish-german",
+                    "description": "ud - Turkish-German"
+                },
+                {
+                    "value": "chinese",
+                    "description": "zh - Chinese"
+                }
+            ]
+        },
+        {
+            "type": "select",
+            "label": "Theme",
+            "name": "theme",
+            "value": "random",
+            "options": [
+                {
+                    "value": "random",
+                    "description": "random"
+                },
+                {
+                    "value": "fantasy",
+                    "description": "Fantasy"
+                },
+                {
+                    "value": "science_fiction",
+                    "description": "Science Fiction"
+                },
+                {
+                    "value": "horror",
+                    "description": "Horror"
+                },
+                {
+                    "value": "mystery",
+                    "description": "Mystery"
+                },
+                {
+                    "value": "historical",
+                    "description": "Historical"
+                },
+                {
+                    "value": "superhero",
+                    "description": "Superhero"
+                },
+                {
+                    "value": "cyberpunk",
+                    "description": "Cyberpunk"
+                },
+                {
+                    "value": "post_apocalyptic",
+                    "description": "Post-apocalyptic"
+                },
+                {
+                    "value": "steampunk",
+                    "description": "Steampunk"
+                },
+                {
+                    "value": "space_opera",
+                    "description": "Space Opera"
+                },
+                {
+                    "value": "urban_fantasy",
+                    "description": "Urban Fantasy"
+                },
+                {
+                    "value": "pirate",
+                    "description": "Pirate"
+                },
+                {
+                    "value": "western",
+                    "description": "Western"
+                }
+            ]
+             
+        },
+        {
+            "type": "select",
+            "label": "Location",
+            "name": "location",
+            "value": "random",
+            "options": [
+                {
+                    "value": "random",
+                    "description": "random"
+                },
+                {
+                    "value": "forest",
+                    "description": "Forest"
+                },
+                {
+                    "value": "desert",
+                    "description": "Desert"
+                },
+                {
+                    "value": "mountain",
+                    "description": "Mountain"
+                },
+                {
+                    "value": "cave",
+                    "description": "Cave"
+                },
+                {
+                    "value": "city",
+                    "description": "City"
+                },
+                {
+                    "value": "village",
+                    "description": "Village"
+                },
+                {
+                    "value": "castle",
+                    "description": "Castle"
+                },
+                {
+                    "value": "dungeon",
+                    "description": "Dungeon"
+                },
+                {
+                    "value": "island",
+                    "description": "Island"
+                },
+                {
+                    "value": "underwater",
+                    "description": "Underwater"
+                },
+                {
+                    "value": "swamp",
+                    "description": "Swamp"
+                },
+                {
+                    "value": "ruins",
+                    "description": "Ruins"
+                },
+                {
+                    "value": "space_station",
+                    "description": "Space Station"
+                },
+                {
+                    "value": "alternate_dimension",
+                    "description": "Alternate Dimension"
+                },
+                {
+                    "value": "tundra",
+                    "description": "Tundra"
+                },
+                {
+                    "value": "volcano",
+                    "description": "Volcano"
+                },
+                {
+                    "value": "sky",
+                    "description": "Sky"
+                },
+                {
+                    "value": "abyss",
+                    "description": "Abyss"
+                }
+            ]            
+        },
+        {
+            "type": "select",
+            "label": "Objectives",
+            "name": "objectives",
+            "value": "random",
+            "options": [
+                {
+                    "value": "random",
+                    "description": "random"
+                },
+                {
+                    "value": "retrieve_artifact",
+                    "description": "Retrieve an artifact"
+                },
+                {
+                    "value": "rescue_npc",
+                    "description": "Rescue an NPC"
+                },
+                {
+                    "value": "defeat_villain",
+                    "description": "Defeat a villain"
+                },
+                {
+                    "value": "solve_mystery",
+                    "description": "Solve a mystery"
+                },
+                {
+                    "value": "survive_encounter",
+                    "description": "Survive an encounter"
+                },
+                {
+                    "value": "escort_npc",
+                    "description": "Escort an NPC"
+                },
+                {
+                    "value": "gather_information",
+                    "description": "Gather information"
+                },
+                {
+                    "value": "explore_location",
+                    "description": "Explore a location"
+                },
+                {
+                    "value": "seize_control",
+                    "description": "Seize control of an area"
+                },
+                {
+                    "value": "defend_location",
+                    "description": "Defend a location"
+                },
+                {
+                    "value": "complete_ritual",
+                    "description": "Complete a ritual"
+                },
+                {
+                    "value": "negotiate_agreement",
+                    "description": "Negotiate an agreement"
+                },
+                {
+                    "value": "recover_lost_technology",
+                    "description": "Recover lost technology"
+                },
+                {
+                    "value": "prevent_disaster",
+                    "description": "Prevent a disaster"
+                },
+                {
+                    "value": "establish_alliance",
+                    "description": "Establish an alliance"
+                },
+                {
+                    "value": "thwart_invasion",
+                    "description": "Thwart an invasion"
+                },
+                {
+                    "value": "find_treasure",
+                    "description": "Find a hidden treasure"
+                },
+                {
+                    "value": "destroy_object",
+                    "description": "Destroy a dangerous object"
+                }
+            ]             
+        },
+        {
+            "type": "select",
+            "label": "Threats",
+            "name": "threats",
+            "value": "random",
+            "options": [
+                {
+                    "value": "random",
+                    "description": "random"
+                },
+                {
+                    "value": "dangerous_creatures",
+                    "description": "Dangerous creatures"
+                },
+                {
+                    "value": "enemy_faction",
+                    "description": "Enemy faction"
+                },
+                {
+                    "value": "natural_disasters",
+                    "description": "Natural disasters"
+                },
+                {
+                    "value": "deadly_traps",
+                    "description": "Deadly traps"
+                },
+                {
+                    "value": "corrupt_government",
+                    "description": "Corrupt government"
+                },
+                {
+                    "value": "ancient_evil",
+                    "description": "Ancient evil"
+                },
+                {
+                    "value": "rival_adventurers",
+                    "description": "Rival adventurers"
+                },
+                {
+                    "value": "powerful_villain",
+                    "description": "Powerful villain"
+                },
+                {
+                    "value": "uncontrolled_magic",
+                    "description": "Uncontrolled magic"
+                },
+                {
+                    "value": "plague_outbreak",
+                    "description": "Plague outbreak"
+                },
+                {
+                    "value": "hostile_aliens",
+                    "description": "Hostile aliens"
+                },
+                {
+                    "value": "zombie_apocalypse",
+                    "description": "Zombie apocalypse"
+                },
+                {
+                    "value": "supernatural_forces",
+                    "description": "Supernatural forces"
+                },
+                {
+                    "value": "war",
+                    "description": "War"
+                },
+                {
+                    "value": "political_intrigue",
+                    "description": "Political intrigue"
+                },
+                {
+                    "value": "time_limit",
+                    "description": "Time limit"
+                },
+                {
+                    "value": "environmental_hazards",
+                    "description": "Environmental hazards"
+                },
+                {
+                    "value": "moral_dilemmas",
+                    "description": "Moral dilemmas"
+                }
+            ]            
+        },
+        {
+            "type": "select",
+            "label": "NPCs",
+            "name": "npcs",
+            "value": "random",
+            "options": [
+                {
+                    "value": "random",
+                    "description": "random"
+                },
+                {
+                    "value": "wise_old_man",
+                    "description": "Wise old man"
+                },
+                {
+                    "value": "mysterious_stranger",
+                    "description": "Mysterious stranger"
+                },
+                {
+                    "value": "royal_court_member",
+                    "description": "Royal court member"
+                },
+                {
+                    "value": "guild_master",
+                    "description": "Guild master"
+                },
+                {
+                    "value": "merchant",
+                    "description": "Merchant"
+                },
+                {
+                    "value": "innkeeper",
+                    "description": "Innkeeper"
+                },
+                {
+                    "value": "village_elder",
+                    "description": "Village elder"
+                },
+                {
+                    "value": "rebel_leader",
+                    "description": "Rebel leader"
+                },
+                {
+                    "value": "priest",
+                    "description": "Priest"
+                },
+                {
+                    "value": "wandering_bard",
+                    "description": "Wandering bard"
+                },
+                {
+                    "value": "scientist",
+                    "description": "Scientist"
+                },
+                {
+                    "value": "captain",
+                    "description": "Captain"
+                },
+                {
+                    "value": "famous_adventurer",
+                    "description": "Famous adventurer"
+                },
+                {
+                    "value": "oracle",
+                    "description": "Oracle"
+                },
+                {
+                    "value": "escaped_prisoner",
+                    "description": "Escaped prisoner"
+                },
+                {
+                    "value": "rival_npc",
+                    "description": "Rival NPC"
+                },
+                {
+                    "value": "ghost",
+                    "description": "Ghost"
+                },
+                {
+                    "value": "lost_child",
+                    "description": "Lost child"
+                }
+            ]            
+        },
+        {
+            "type": "select",
+            "label": "Adventure Type",
+            "name": "adventure_type",
+            "value": "random",
+            "options": [
+                {
+                    "value": "random",
+                    "description": "random"
+                },
+                {
+                    "value": "dungeon_crawl",
+                    "description": "Dungeon crawl"
+                },
+                {
+                    "value": "investigation",
+                    "description": "Investigation"
+                },
+                {
+                    "value": "rescue_mission",
+                    "description": "Rescue mission"
+                },
+                {
+                    "value": "treasure_hunt",
+                    "description": "Treasure hunt"
+                },
+                {
+                    "value": "escort",
+                    "description": "Escort"
+                },
+                {
+                    "value": "intrigue",
+                    "description": "Intrigue"
+                },
+                {
+                    "value": "heist",
+                    "description": "Heist"
+                },
+                {
+                    "value": "exploration",
+                    "description": "Exploration"
+                },
+                {
+                    "value": "siege",
+                    "description": "Siege"
+                },
+                {
+                    "value": "rebellion",
+                    "description": "Rebellion"
+                },
+                {
+                    "value": "diplomacy",
+                    "description": "Diplomacy"
+                },
+                {
+                    "value": "time_travel",
+                    "description": "Time travel"
+                },
+                {
+                    "value": "survival",
+                    "description": "Survival"
+                },
+                {
+                    "value": "epic_battle",
+                    "description": "Epic battle"
+                },
+                {
+                    "value": "gladiatorial_games",
+                    "description": "Gladiatorial games"
+                },
+                {
+                    "value": "alternate_reality",
+                    "description": "Alternate reality"
+                },
+                {
+                    "value": "tournament",
+                    "description": "Tournament"
+                },
+                {
+                    "value": "sandbox",
+                    "description": "Sandbox"
+                }
+            ]
+            
+        }
+    ],
+    "configuration": true,
+    "configuration_template": [
+        {
+            "type": "text",
+            "label": "OpenAI APIKey",
+            "name": "api_key",
+            "value": ""
+        }
+    ],
+    "requirements": [
+        "openai==0.27.4"
+    ]
+}
