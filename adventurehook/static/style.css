@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Eagle+Lake&display=swap');
+
+.adventurehook_text {
+    text-align: justify;
+    font-family: 'Eagle Lake', cursive;
+}
+
+.adventurehook_text::first-letter {
+    color: white;
+    float: left;
+    font-size: 4em;
+    line-height: 0.9;
+    margin: 0.2rem;
+    margin-right: 0.6rem;
+    padding: 1rem;
+    background: black;
+    box-shadow: 0 0 0 .2rem black;
+    border: .2rem solid white; 
+  }
