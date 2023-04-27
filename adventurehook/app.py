@@ -16,30 +16,17 @@ class App(Application):
 
     def __init__(self, desc):
         Application.__init__(self, __name__, __file__, desc)
-        self.theme_dict = {}
-        self.location_dict = {}
-        self.objectives_dict = {}
-        self.threats_dict = {}
-        self.npcs_dict = {}
-        self.adventure_type_dict = {}
-        self.parse_config_parameters()
-
-
-
-    def parse_config_parameters(self):
+        self.dicts = { "theme": [], "location": [], "objetives": [], "threats": [], "npcs": [], "adventure_type": [] }
         for attr in self.desc["inspector_template"]:
-            if attr["name"] == "theme":
-                self.theme_dict = {item["value"]: item["description"] for item in attr["options"]}
-            elif attr["name"] == "location":
-                self.location_dict = {item["value"]: item["description"] for item in attr["options"]}
-            elif attr["name"] == "objectives":
-                self.objectives_dict = {item["value"]: item["description"] for item in attr["options"]}
-            elif attr["name"] == "threats":
-                self.threats_dict = {item["value"]: item["description"] for item in attr["options"]}
-            elif attr["name"] == "npcs":
-                self.npcs_dict = {item["value"]: item["description"] for item in attr["options"]}
-            elif attr["name"] == "adventure_type":
-                self.adventure_type_dict = {item["value"]: item["description"] for item in attr["options"]}
+            self.dicts[attr["name"]] = [ item["value"] for item in attr["options"] ]
+
+
+    def get_parameter(self, element):
+        if ( element["name"] in self.dicts ):
+            max_index = len(self.dicts[element["name"]]) - 1
+            random_index = random.randint(1, max_index)
+            return element["value"] if element["value"] != "random" else self.dicts[element["name"]][random_index]
+
 
 
     # Function that generates a role-playing game adventure hook from a list of categories
@@ -74,9 +61,8 @@ class App(Application):
                 temperature=0.8
             )
 
-
             logger.info(response)
-            
+
             # Extract the generated text from the API response
             output_text = response.choices[0].message.content
 
@@ -113,18 +99,18 @@ class App(Application):
                     if element["name"] == "language":
                         language = element["value"]
                     elif element["name"] == "theme":
-                        theme = self.theme_dict[element["value"]]
+                        theme = self.get_parameter(element)
                     elif element["name"] == "location":
-                        location = self.location_dict[element["value"]]
+                        location = self.get_parameter(element)
                     elif element["name"] == "objectives":
-                        objectives = self.objectives_dict[element["value"]]
+                        objectives = self.get_parameter(element)
                     elif element["name"] == "threats":
-                        threats = self.threats_dict[element["value"]]
+                        threats = self.get_parameter(element)
                     elif element["name"] == "npcs":
-                        npcs = self.npcs_dict[element["value"]]
+                        npcs = self.get_parameter(element)
                     elif element["name"] == "adventure_type":
-                        adventure_type = self.adventure_type_dict[element["value"]]
+                        adventure_type = self.get_parameter(element)
 
             hook = self.generate_hook(language, theme, location, objectives, threats, npcs, adventure_type)
 
-            return render_template('adventurehook/component.html', hook=hook)
+            return render_template('adventurehook/component.html', hook=hook, theme=theme)
