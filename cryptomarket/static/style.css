@@ -1,0 +1,54 @@
+.cryptomarket_container {
+    width: 100%;
+    text-align: center;
+    display: inline-block;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    font-size: 1.25em;
+}
+
+.cryptomarket_entry {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    padding: 10px;
+    /* Agregar borde inferior a todas las entradas excepto la última */
+    border-bottom: 1px solid black;
+}
+
+/* Eliminar el borde inferior de la última entrada */
+.cryptomarket_entry:last-child {
+    border-bottom: none;
+}
+
+/* Estilo en caso de que haya solo una entrada, eliminar el borde */
+.cryptomarket_entry:only-child {
+    border: 1px solid #ddd; /* O 'none' si no deseas ningún borde */
+}
+
+.cryptomarket_icon {
+    width: 50px; 
+    height: 50px;
+    margin-right: 15px;
+    filter: grayscale() contrast(200%);
+}
+
+.cryptomarket_name {
+    flex-grow: 1;
+    font-weight: bold;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.cryptomarket_value, .cryptomarket_volume {
+    color: #333;
+    font-weight: bolder;
+}
+
+.cryptomarket_volume {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: #e6e6e6;
+    border-radius: 5px;
+    font-size: 0.9em;
+}

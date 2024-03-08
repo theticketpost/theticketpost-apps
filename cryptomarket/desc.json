@@ -1,0 +1,38 @@
+{
+    "name": "cryptomarket",
+    "description": "Displays real-time crypto prices, 24h changes for chosen coins. Efficient, simple insights. Powered by CoinGecko.",
+    "version": "0.0.1",
+    "author": "eipporko",
+    "render_component": true,
+    "refresh_component": true,
+    "inspector": true,
+    "inspector_template": [
+        {
+            "type": "text",
+            "label": "Crypto IDs List (eg bitcoin, ethereum)",
+            "name": "crypto_list",
+            "value": "bitcoin, ethereum"
+        },
+        {
+            "type": "select",
+            "label": "Currency",
+            "name": "currency",
+            "value": "usd",
+            "options": [
+                {
+                    "value": "usd",
+                    "description": "USD"
+                },
+                {
+                    "value": "eur",
+                    "description": "EUR"
+                },
+                {
+                    "value": "gbp",
+                    "description": "GBP"
+                }
+            ]
+        }
+    ],
+    "configuration": false
+}

@@ -10,8 +10,8 @@ from flask import render_template, request
 
 class App(Application):
 
-    def __init__(self, desc):
-        Application.__init__(self, __name__, __file__, desc)
+    def __init__(self, desc, flaskApp):
+        Application.__init__(self, __name__, __file__, desc, flaskApp)
 
 
     def render_component(self):

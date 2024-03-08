@@ -14,8 +14,8 @@ import json
 
 class App(Application):
 
-    def __init__(self, desc):
-        Application.__init__(self, __name__, __file__, desc)
+    def __init__(self, desc, flaskApp):
+        Application.__init__(self, __name__, __file__, desc, flaskApp)
         self.dicts = { "theme": [], "location": [], "objetives": [], "threats": [], "npcs": [], "adventure_type": [] }
         for attr in self.desc["inspector_template"]:
             self.dicts[attr["name"]] = [ item["value"] for item in attr["options"] ]

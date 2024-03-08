@@ -1,0 +1,23 @@
+<link rel="stylesheet" href={{ url_for('cryptomarketapp_blueprint.static', filename='style.css') }}>
+<div class="cryptomarket_container">
+    {% if (crypto_data is defined) and crypto_data %}
+    {%  for crypto in crypto_data %}
+    <div class="cryptomarket_entry">
+        <image class="cryptomarket_icon" src="{{ crypto.image }}">
+        <div class="cryptomarket_name">{{crypto.symbol }}</div>
+        <div class="cryptomarket_value">
+            {% if currency.position == 'after' %}
+                {{ crypto.current_price | custom_format }}{{ currency.symbol }}
+            {% else %}
+                {{ currency.symbol }}{{ crypto.current_price | custom_format }}
+            {% endif %}
+        </div>
+        <div class="cryptomarket_volume">
+            {{ "+" if crypto.price_change_percentage_24h > 0 else "" }}{{ crypto.price_change_percentage_24h | round(2) }}%
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+        <div>No entries</div>
+    {% endif %}
+</div>
