@@ -1,0 +1,125 @@
+{
+    "name": "bit-wise-advisor",
+    "description": "AI-powered guide through the Bitcoin market, offering concise, actionable insights for savvy investment decisions. Powered by GhatGPT",
+    "version": "0.0.0",
+    "author": "eipporko",
+    "render_component": true,
+    "refresh_component": true,
+    "inspector": true,
+    "inspector_template": [
+        {
+            "type": "select",
+            "label": "Language",
+            "name": "language",
+            "value": "english",
+            "options": [
+                {
+                    "value": "arabic",
+                    "description": "ar - Arabic"
+                },
+                {
+                    "value": "german",
+                    "description": "de - German"
+                },
+                {
+                    "value": "english",
+                    "description": "en - English"
+                },
+                {
+                    "value": "spanish",
+                    "description": "es - Spanish"
+                },
+                {
+                    "value": "french",
+                    "description": "fr - French"
+                },
+                {
+                    "value": "hebrew",
+                    "description": "he - Hebrew"
+                },
+                {
+                    "value": "italian",
+                    "description": "it - Italian"
+                },
+                {
+                    "value": "dutch",
+                    "description": "nl - Dutch"
+                },
+                {
+                    "value": "norwegian",
+                    "description": "no - Norwegian"
+                },
+                {
+                    "value": "portuguese",
+                    "description": "pt - Portuguese"
+                },
+                {
+                    "value": "russian",
+                    "description": "ru - Russian"
+                },
+                {
+                    "value": "swedish",
+                    "description": "sv - Swedish"
+                },
+                {
+                    "value": "turkish-german",
+                    "description": "ud - Turkish-German"
+                },
+                {
+                    "value": "chinese",
+                    "description": "zh - Chinese"
+                }
+            ]
+        },
+        {
+            "type": "select",
+            "label": "Currency",
+            "name": "currency",
+            "value": "usd",
+            "options": [
+                {
+                    "value": "usd",
+                    "description": "USD"
+                },
+                {
+                    "value": "eur",
+                    "description": "EUR"
+                },
+                {
+                    "value": "gbp",
+                    "description": "GBP"
+                }
+            ]
+        },
+        {
+            "type": "select",
+            "label": "Strategy",
+            "name": "strategy",
+            "value": "long-term conservative",
+            "options": [
+                {
+                    "value": "long-term conservative",
+                    "description": "Long-Term Conservative"
+                },
+                {
+                    "value": "aggressive short-term",
+                    "description": "Aggresive Short-Term"
+                }
+            ]
+        }
+    ],
+    "configuration_template": [
+        {
+            "type": "text",
+            "label": "OpenAI APIKey",
+            "name": "api_key",
+            "value": ""
+        }
+    ],
+    "configuration": true,
+    "requirements": [
+        "openai==1.13.3",
+        "pandas==2.2.1",
+        "numpy==1.26.4"
+    ]
+}

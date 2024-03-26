@@ -1,0 +1,19 @@
+.bitwise_headline {
+    text-align: left;
+    font-family: Postoni, BodoniSvtyTwoITCTT-Book, georgia, serif;
+    line-height: 1.1;
+    font-size: 1.75em;
+    font-weight: 700;
+}
+
+
+.bitwise_headline + .bitwise_article {
+    text-indent: 30px;
+}
+
+
+.bitwise_article {
+    line-height: 1.4;
+    font-size: 1.1em;
+    text-align: justify;
+}

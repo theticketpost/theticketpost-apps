@@ -1,0 +1,7 @@
+<link rel="stylesheet" href={{ url_for('bit-wise-advisorapp_blueprint.static', filename='style.css') }}>
+<div style="width: 100%; text-align: center; display: inline-block;" >
+    <p class="bitwise_headline">{{ headline }}</p>
+    {% for paragraph in article %}
+    <p class="bitwise_article">{{ paragraph }}</p>
+    {% endfor %}
+</div>

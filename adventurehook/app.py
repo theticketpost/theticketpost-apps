@@ -7,8 +7,7 @@ sys.path.append(current)
 from theticketpost.application import Application
 from flask import render_template, request
 from loguru import logger
-import openai
-from openai.error import OpenAIError, RateLimitError
+from openai import OpenAI
 import random
 import json
 
@@ -36,7 +35,10 @@ class App(Application):
         response = self.get_configuration_json()
         json_object = json.loads(response.data)
         api_key = next((item for item in json_object if item["name"] == "api_key"), None)
-        openai.api_key = api_key["value"]
+
+        client = OpenAI(
+            api_key=api_key["value"]
+        )
 
         # Concatenate the categories into a single input text string
         input_text = f"Please generate an adventure hook without listing the given parameters. " \
@@ -51,8 +53,8 @@ class App(Application):
         try:
             # Generate a role-playing game adventure hook from the input text string using the OpenAI API
 
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
+            response = client.chat.completions.create(
+                model="gpt-4-0125-preview",
                 messages=[
                     {"role": "system", "content": "You are an AI trained to generate short and concise role-playing game adventure hooks based on specific parameters."},
                     {"role": "user", "content": input_text}
@@ -71,7 +73,7 @@ class App(Application):
             print(f"OpenAI API rate limit error: {e}")
             output_text = "Sorry, I've exceeded my usage quota on the OpenAI API. Please try again later."
 
-        except OpenAIError as e:
+        except openai.error.OpenAIError as e:
             # Handle other OpenAI API errors
             print(f"OpenAI API error: {e}")
             output_text = "An error occurred on the OpenAI API. Please try again later."
