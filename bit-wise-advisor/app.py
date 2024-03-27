@@ -118,6 +118,8 @@ class App(Application):
         response = requests.get(url, params=params)
         data = response.json()
 
+        logger.debug(data)
+        
         results = {
             'price': data[-1]["current_price"],
             'volume': data[-1]["total_volume"]
@@ -198,8 +200,9 @@ class App(Application):
         description = (
             "Imagine you're an economic journalist tasked with creating a compelling story about Bitcoin's latest market dynamics, using key data indicators. "
             "Is not allowed markdown. Your assignment is to produce a JSON output with two sections: a 'headline' and an 'article'. The 'article' should be presented as a list of paragraphs, each containing plain text (not JSON objects). "
+            "The output must to have this scheme { 'headline': 'the headline', 'article': ['paragraph1', 'paragraph2']}"
             "The headline needs to succinctly summarize Bitcoin's current market status. The article should then offer a deep dive into Bitcoin's recent market behavior."
-            "Please keep the entire article concise, aiming for a maximum of 60 words to ensure it's digestible and impactful for a wide audience. This constraint challenges you to distill your insights into the most engaging and informative essence possible."
+            "Please keep the entire article concise, aiming for a maximum of 100 words to ensure it's digestible and impactful for a wide audience. This constraint challenges you to distill your insights into the most engaging and informative essence possible."
         )
 
         user_input = (
@@ -215,17 +218,12 @@ class App(Application):
             f"and the second resistance (R2) is at {analysis_data['R2']:.2f} {currency}. "
             f"Craft a {strategy} analysis strategy for investing in Bitcoin. "
             f"Incorporate the current price into the narrative and conclude with a clear recommendation on whether it is a good time to buy, sell, or hold Bitcoin positions, "
-            f"considering the provided market data and indicators. "
-            f"Imagine you are drafting a concise market insight section for a financial newspaper, aimed at guiding readers through the current investment climate for Bitcoin. "
-            f"Your summary should blend both strategies into a seamless narrative, highlighting key decision points and market indicators, "
-            f"and conclude with an actionable advice reflecting the current market conditions. "
-            f"Remember to prominently incorporate the current Bitcoin price within your analysis and conclusion. "
             f"In case You mention any pivot or resistance points in the analysis, You'll make sure to include their values and explain what these levels typically indicate for the market. "
             f"For the long haul, here's a golden nugget: it’s usually a smart move to buy Bitcoin when its price is chillin' below the 2-year MA, kind of like snagging a bargain before the price jumps. "
             f"And when it’s partying way above the 2-year MAx5? That might be your cue to consider selling. Why? Because that's like riding the elevator to the top floor and stepping out before it heads back down. "
             f"This way, you’re maximizing your profit potential by buying low and selling high. Just remember, the crypto market can be as unpredictable as weather in April, so always do your due diligence!"
             f"When you talk about prices, let’s keep things crystal clear by sticking to the format and symbols that match our language and locale instead of write the currency code. "
-            f"Provide the output in {language}."
+            f"Provide the output in {language} aiming for a maximum of 100 words."
         )
 
         messages = [
