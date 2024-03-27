@@ -6,7 +6,7 @@ sys.path.append(current)
 
 from theticketpost.application import Application
 from flask import render_template, request
-
+from loguru import logger
 
 class App(Application):
 
