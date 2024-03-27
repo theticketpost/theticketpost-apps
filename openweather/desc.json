@@ -1,7 +1,7 @@
 {
     "name": "openweather",
     "description": "Shows the current temperature and forecast of your location. Powered by OpenWeather",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,

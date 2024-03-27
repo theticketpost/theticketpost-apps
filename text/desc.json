@@ -1,7 +1,7 @@
 {
     "name": "text",
     "description": "Shows a custom text with the possibility of using strftime format codes.",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,

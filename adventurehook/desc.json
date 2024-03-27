@@ -1,7 +1,7 @@
 {
     "name": "adventurehook",
     "description": "Module that generates story hooks for tabletop role-playing games in seconds, saving time for game masters and enhacing the player experience. Simply input senven categories and get an exciting and unique story hook in no time.",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,

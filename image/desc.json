@@ -1,7 +1,7 @@
 {
     "name": "image",
     "description": "Shows an image referenced by url",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": false,

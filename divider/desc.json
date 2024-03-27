@@ -1,7 +1,7 @@
 {
     "name": "divider",
     "description": "Inserts a line separator with a custom text on it.",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": false,
