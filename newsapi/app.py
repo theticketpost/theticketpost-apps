@@ -65,8 +65,10 @@ class App(Application):
                 article["publishedAt"] = timestamp.strftime("%B %-d, %Y at %-I:%M %p %Z")
                 if not article["source"]["id"]:
                     article["source"]["id"] = article["source"]["name"]
+            
+            articles = [article for article in data["articles"] if article["source"]["id"] != '[Removed]']
 
-            return data["articles"]
+            return articles
         else:
             return []
 
