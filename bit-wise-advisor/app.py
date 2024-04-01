@@ -135,10 +135,6 @@ class App(Application):
             'R1': latest_pivot_points['R1'],
             'R2': latest_pivot_points['R2']
         }
-
-        logger.debug(df)
-        logger.debug(f"today volume: {df['volume'].iloc[-1]} yesterday {df['volume'].iloc[-2]}")
-        logger.debug(results)
         
         return results
 
