@@ -1,7 +1,7 @@
 {
     "name": "bit-wise-advisor",
-    "description": "AI-powered guide through the Bitcoin market, offering concise, actionable insights for savvy investment decisions. Powered by GhatGPT and CoinGecko",
-    "version": "1.0.0",
+    "description": "AI-powered guide through the Bitcoin market, offering concise, actionable insights for savvy investment decisions. Powered by GhatGPT and CryptoCompare",
+    "version": "1.1.0",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,
@@ -112,7 +112,13 @@
         {
             "type": "text",
             "label": "OpenAI APIKey",
-            "name": "api_key",
+            "name": "openai_api_key",
+            "value": ""
+        },
+        {
+            "type": "text",
+            "label": "CryptoCompare Demo APIKey",
+            "name": "cryptocompare_api_key",
             "value": ""
         }
     ],

@@ -22,54 +22,34 @@ class App(Application):
 
 
 
-    def fetch_historical_data_with_volume(self, from_timestamp, to_timestamp, currency):
-        url = "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range"
+    def fetch_historical_data_with_volume(self, from_timestamp, to_timestamp, currency, cryptocompare_api_key):
+        days = (to_timestamp - from_timestamp) / (24*60*60)
+        url = "https://min-api.cryptocompare.com/data/v2/histoday"
         params = {
-            'vs_currency': currency,
-            'from': from_timestamp,
-            'to': to_timestamp
+            'fsym': 'BTC',
+            'tsym': currency, 
+            'limit': int(days),
+            'api_key': cryptocompare_api_key
         }
+
         response = requests.get(url, params=params)
         data = response.json()
 
-        prices = data['prices']
-        volumes = data['total_volumes']
-        df = pd.DataFrame(prices, columns=['timestamp', 'price'])
-        df_volume = pd.DataFrame(volumes, columns=['timestamp', 'volume'])
-        df['volume'] = df_volume['volume']
-        df['date'] = pd.to_datetime(df['timestamp'], unit='ms')
+        if 'Response' in data and data['Response'] == 'Error':
+            logger.error(data)
+            return pd.DataFrame()
+        
+        df = pd.DataFrame(data['Data']['Data'])
+        df['date'] = pd.to_datetime(df['time'], unit='s')
+        df.rename(columns={'time': 'timestamp', 'close': 'price', 'volumeto': 'volume', 'high': 'daily_max', 'low': 'daily_min' }, inplace=True)
         df.set_index('date', inplace=True)
+
         return df
 
 
 
-    def fetch_historical_data_min_max_close(self, from_timestamp, to_timestamp, currency):
-        url = "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range"
-
-        params = {
-            'vs_currency': currency,
-            'from': from_timestamp,
-            'to': to_timestamp
-        }
-        response = requests.get(url, params=params)
-        data = response.json()
-
-        prices = data['prices']
-        df = pd.DataFrame(prices, columns=['timestamp', 'price'])
-        df['date'] = pd.to_datetime(df['timestamp'], unit='ms')
-        df.set_index('date', inplace=True)
-
-        daily_df = pd.DataFrame()
-        daily_df['daily_max'] = df['price'].resample('D').max()
-        daily_df['daily_min'] = df['price'].resample('D').min()
-        daily_df['daily_close'] = df['price'].resample('D').last()
-
-        return daily_df
-
-
-
     def calculate_pivot_points(self, df):
-        df['pivot_point'] = (df['daily_max'] + df['daily_min'] + df['daily_close']) / 3
+        df['pivot_point'] = (df['daily_max'] + df['daily_min'] + df['price']) / 3
         df['R1'] = 2 * df['pivot_point'] - df['daily_min']
         df['R2'] = df['pivot_point'] + (df['daily_max'] - df['daily_min'])
 
@@ -88,7 +68,6 @@ class App(Application):
 
 
     def calculate_2y_ma_multiplier(self, df):
-        # Assuming 365 days per year, so 730 represents roughly 2 years
         df['MA_2y'] = df['price'].rolling(window=730, min_periods=1).mean()
         df['MA_2y_multiplier'] = df['MA_2y'] * 5
         return df
@@ -109,62 +88,37 @@ class App(Application):
 
 
 
-    def fetch_crypto_data(self, currency):
-        url = 'https://api.coingecko.com/api/v3/coins/markets'
-        params = {
-            'vs_currency': currency,
-            'ids': 'bitcoin',
-        }
-        response = requests.get(url, params=params)
-        data = response.json()
-
-        logger.debug(data)
-        
-        results = {
-            'price': data[-1]["current_price"],
-            'volume': data[-1]["total_volume"]
-        }
-
-        return results
-
-
-
     def calculate_average_volume_last_x_days(self, df, days):
         df_sorted = df.sort_index()
-
         last_date = df_sorted.index[-1]
-        
         start_date = last_date - timedelta(days=days)
-        
         df_filtered = df_sorted.loc[start_date:last_date]
-
         average_volume = df_filtered['volume'].mean()
-        
         return average_volume
 
 
 
-    def get_analysis_data(self, df, current_data, latest_pivot_points):
+    def get_analysis_data(self, df, latest_pivot_points):
         last_row = df.iloc[-1]
+        df = df.sort_index()
         ma_2y = last_row['MA_2y']
         ma_2y_multiplier = last_row['MA_2y_multiplier']
         volume_mean_last_30_days = self.calculate_average_volume_last_x_days(df, 30)
         fear_and_greed_index = self.fetch_fear_and_greed_index(1).iloc[-1]['fear_and_greed_index']
 
-        diff_ma_2y = current_data['price'] - ma_2y
+        diff_ma_2y = df['price'].iloc[-1] - ma_2y
         diff_ma_2y_percent = (diff_ma_2y / ma_2y) * 100
-        diff_ma_2y_multiplier = current_data['price'] - ma_2y_multiplier
+        diff_ma_2y_multiplier = df['price'].iloc[-1] - ma_2y_multiplier
         diff_ma_2y_multiplier_percent = (diff_ma_2y_multiplier / ma_2y_multiplier) * 100
-        diff_volume_last_30_days = current_data['volume'] - volume_mean_last_30_days
+        diff_volume_last_30_days = df['volume'].iloc[-1] - volume_mean_last_30_days
         diff_volume_percent_last_30_days = ( diff_volume_last_30_days / volume_mean_last_30_days ) * 100
         
-        df_sorted = df.sort_index()
-        diff_volume_last_24_h = current_data['volume'] - df_sorted['volume'].iloc[-1]
-        diff_volume_percent_last_24_h = ( diff_volume_last_24_h / df_sorted['volume'].iloc[-1] ) * 100
+        diff_volume_last_24_h = df['volume'].iloc[-1] - df['volume'].iloc[-2]
+        diff_volume_percent_last_24_h = ( diff_volume_last_24_h / df['volume'].iloc[-2] ) * 100
 
         results = {
-            'current_price': current_data['price'],
-            'current_volume': current_data['volume'],
+            'current_price': df['price'].iloc[-1],
+            'current_volume': df['volume'].iloc[-1],
             'volume_mean_last_30_days': volume_mean_last_30_days,
             'ma_2y': ma_2y,
             'ma_2y_multiplier': ma_2y_multiplier,
@@ -181,6 +135,10 @@ class App(Application):
             'R1': latest_pivot_points['R1'],
             'R2': latest_pivot_points['R2']
         }
+
+        logger.debug(df)
+        logger.debug(f"today volume: {df['volume'].iloc[-1]} yesterday {df['volume'].iloc[-2]}")
+        logger.debug(results)
         
         return results
 
@@ -191,7 +149,7 @@ class App(Application):
         # get app configuration parameters
         response = self.get_configuration_json()
         json_object = json.loads(response.data)
-        api_key = next((item for item in json_object if item["name"] == "api_key"), None)
+        api_key = next((item for item in json_object if item["name"] == "openai_api_key"), None)
 
         client = OpenAI(
             api_key=api_key["value"]
@@ -200,8 +158,9 @@ class App(Application):
         description = (
             "Imagine you're an economic journalist tasked with creating a compelling story about Bitcoin's latest market dynamics, using key data indicators. "
             "Is not allowed markdown. Your assignment is to produce a JSON output with two sections: a 'headline' and an 'article'. The 'article' should be presented as a list of paragraphs, each containing plain text (not JSON objects). "
-            "The output must to have this scheme { 'headline': 'the headline', 'article': ['paragraph1', 'paragraph2']}"
-            "The headline needs to succinctly summarize Bitcoin's current market status. The article should then offer a deep dive into Bitcoin's recent market behavior."
+            "The output must to have this scheme { 'headline': 'the headline', 'article': ['paragraph1', 'paragraph2', ... ]}. "
+            "The headline needs to succinctly summarize Bitcoin's current market status. The article should then offer a deep dive into Bitcoin's recent market behavior. "
+            "Please ensure that you divide your ideas into separate short paragraphs. This will enhance the readability of the text once it is printed. "
             "Please keep the entire article concise, aiming for a maximum of 100 words to ensure it's digestible and impactful for a wide audience. This constraint challenges you to distill your insights into the most engaging and informative essence possible."
         )
 
@@ -251,6 +210,11 @@ class App(Application):
 
     def render_component(self):
 
+        # get app configuration parameters
+        response = self.get_configuration_json()
+        json_object = json.loads(response.data)
+        cryptocompare_api_key = next((item for item in json_object if item["name"] == "coingecko_api_key"), None)
+
         language = "english"
         currency = "usd"
         strategy = "long-term conservative"
@@ -267,19 +231,21 @@ class App(Application):
                     elif element["name"] == "strategy":
                         strategy = element["value"]
         
-            now = datetime.now()
-            to_date = datetime(now.year, now.month, now.day)
-            to_timestamp = int(to_date.timestamp())
+        now = datetime.now()
+        to_date = datetime(now.year, now.month, now.day)
+        to_timestamp = int(to_date.timestamp())
 
 
-            df = self.fetch_historical_data_with_volume((to_date - timedelta(days=730)).timestamp(), to_timestamp, currency)
+        df = self.fetch_historical_data_with_volume((to_date - timedelta(days=730)).timestamp(), to_timestamp, currency, cryptocompare_api_key)
+
+        if not df.empty:
             df_ma = self.calculate_2y_ma_multiplier(df)
 
-            df_min_max_last = self.fetch_historical_data_min_max_close((to_date - timedelta(days=30)).timestamp(), (to_date).timestamp(), currency) 
-            latest_pivot_points = self.calculate_pivot_points(df_min_max_last)
+            if not df_ma.empty:
+                latest_pivot_points = self.calculate_pivot_points(df_ma)
 
-            current_price = self.fetch_crypto_data(currency)
-            analysis_data = self.get_analysis_data(df_ma, current_price, latest_pivot_points)
-            recommendation = self.analyze_crypto_market(analysis_data, strategy, language, currency)
+                analysis_data = self.get_analysis_data(df_ma, latest_pivot_points)
+                recommendation = self.analyze_crypto_market(analysis_data, strategy, language, currency)
+                return render_template('bit-wise-advisor/component.html', headline=recommendation["headline"], article=recommendation["article"])
 
-            return render_template('bit-wise-advisor/component.html', headline=recommendation["headline"], article=recommendation["article"])
+        return render_template('bit-wise-advisor/component.html', headline="Error", article=["CoinGecko API error, check theticketpost-service logs"])
