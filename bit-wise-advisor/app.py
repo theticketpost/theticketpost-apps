@@ -53,9 +53,9 @@ class App(Application):
         df['R1'] = 2 * df['pivot_point'] - df['daily_min']
         df['R2'] = df['pivot_point'] + (df['daily_max'] - df['daily_min'])
 
-        latest_pivot = df['pivot_point'].iloc[-1]
-        latest_R1 = df['R1'].iloc[-1]
-        latest_R2 = df['R2'].iloc[-1]
+        latest_pivot = df['pivot_point'].iloc[-2]
+        latest_R1 = df['R1'].iloc[-2]
+        latest_R2 = df['R2'].iloc[-2]
 
         result = {
             'pivot_point': latest_pivot,
