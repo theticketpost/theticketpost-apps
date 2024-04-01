@@ -8,6 +8,7 @@ from theticketpost.application import Application
 from flask import render_template, request
 from loguru import logger
 import requests
+import json
 
 
 class App(Application):
@@ -41,12 +42,20 @@ class App(Application):
 
 
     def fetch_crypto_data(self, crypto_ids, currency):
+        # get app configuration parameters
+        response = self.get_configuration_json()
+        json_object = json.loads(response.data)
+        coingecko_api_key = next((item for item in json_object if item["name"] == "coingecko_api_key"), None)
+
         url = 'https://api.coingecko.com/api/v3/coins/markets'
         params = {
             'vs_currency': currency,
             'ids': crypto_ids,
         }
-        response = requests.get(url, params=params)
+        headers = {
+            'x-cg-demo-api-key': coingecko_api_key["value"]
+        }
+        response = requests.get(url, headers=headers, params=params)
         data = response.json()
 
         logger.debug(data)

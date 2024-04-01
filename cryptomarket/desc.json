@@ -1,7 +1,7 @@
 {
     "name": "cryptomarket",
     "description": "Displays real-time crypto prices, 24h changes for chosen coins. Efficient, simple insights. Powered by CoinGecko.",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,
@@ -34,5 +34,13 @@
             ]
         }
     ],
-    "configuration": false
+    "configuration": true,
+    "configuration_template": [
+        {
+            "type": "text",
+            "label": "CoinGecko Demo APIKey",
+            "name": "coingecko_api_key",
+            "value": ""
+        }
+    ]
 }
