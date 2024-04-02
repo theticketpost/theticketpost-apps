@@ -14,6 +14,7 @@ import time
 from datetime import datetime, timedelta
 from openai import OpenAI
 import json
+from scipy.stats import linregress
 
 class App(Application):
 
@@ -98,7 +99,29 @@ class App(Application):
 
 
 
+    def calculate_price_change_percentage_24h_trend(self, df, days):
+        df_sorted = df.sort_index()
+        last_date = df_sorted.index[-1]
+        start_date = last_date - timedelta(days=days)
+        df_filtered = df_sorted.loc[start_date:last_date]
+        daily_diff = df_filtered['price'].diff()
+        percentage_change = (daily_diff / df_filtered['price'].shift(1)) * 100
+
+        price_changes = percentage_change[1:].tolist()
+        price_changes = [x for x in price_changes if not np.isnan(x)]
+
+        days = np.arange(len(price_changes))
+        slope, intercept, r_value, p_value, std_err = linregress(days, price_changes)
+        trend = "ascent" if slope > 0 else "descent" if slope < 0 else "moderate"
+
+        return trend, slope, days
+
+
+
     def get_analysis_data(self, df, latest_pivot_points):
+
+        trend_price_change_24h, slope_price_change_24h, days_price_change_24h = self.calculate_price_change_percentage_24h_trend(df, 7)
+
         last_row = df.iloc[-1]
         df = df.sort_index()
         ma_2y = last_row['MA_2y']
@@ -133,7 +156,10 @@ class App(Application):
             'fear_and_greed_index': fear_and_greed_index,
             'pivot_point': latest_pivot_points['pivot_point'],
             'R1': latest_pivot_points['R1'],
-            'R2': latest_pivot_points['R2']
+            'R2': latest_pivot_points['R2'],
+            'trend_price_change_24h': trend_price_change_24h,
+            'slope_price_change_24h': slope_price_change_24h,
+            'days_price_change_24h': days_price_change_24h
         }
         
         return results
@@ -167,10 +193,11 @@ class App(Application):
             f"and {analysis_data['diff_ma_2y_multiplier_percent']:.2f}% {'above the 2-year MA x5, signaling extreme overvaluation,' if analysis_data['diff_ma_2y_multiplier_percent'] > 0 else 'below the 2-year MA x5, indicating more room for growth,'} "
             f"the trading volume has changed by {analysis_data['diff_volume_percent_last_30_days']:.2f}% compared to the last 30-day volume average, "
             f"the trading volume has changed by {analysis_data['diff_volume_percent_last_24_h']:.2f}% compared to the last 24 hours, "
-             f"and the Fear and Greed Index is at {analysis_data.get('fear_and_greed_index', 'not provided')}. "
+            f"and the Fear and Greed Index is at {analysis_data.get('fear_and_greed_index', 'not provided')}. "
             f"the pivot point is at {analysis_data['pivot_point']:.2f} {currency}, "
             f"with the first resistance (R1) is at {analysis_data['R1']:.2f} {currency}, "
             f"and the second resistance (R2) is at {analysis_data['R2']:.2f} {currency}. "
+            f"Analyzing the percentage change in daily prices over the past {analysis_data['days_price_change_24h']} days reveals a {analysis_data['trend_price_change_24h']} trend in price variations, characterized by a slope of {analysis_data['slope_price_change_24h']:.2f}. "
             f"Craft a {strategy} analysis strategy for investing in Bitcoin. "
             f"Incorporate the current price into the narrative and conclude with a clear recommendation on whether it is a good time to buy, sell, or hold Bitcoin positions, "
             f"In case You mention any pivot or resistance points in the analysis, You'll make sure to include their values and explain what these levels typically indicate for the market. "

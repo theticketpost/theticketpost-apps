@@ -1,7 +1,7 @@
 {
     "name": "bit-wise-advisor",
     "description": "AI-powered guide through the Bitcoin market, offering concise, actionable insights for savvy investment decisions. Powered by GhatGPT and CryptoCompare",
-    "version": "1.1.1",
+    "version": "1.2.1",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,
@@ -126,6 +126,7 @@
     "requirements": [
         "openai==1.13.3",
         "pandas==2.2.1",
-        "numpy==1.26.4"
+        "numpy==1.26.4",
+        "scipy==1.12.0"
     ]
 }
