@@ -1,0 +1,16 @@
+<link rel="stylesheet" href={{ url_for('rssapp_blueprint.static', filename='style.css') }}>
+<div class="rss_container">
+    {% if message %}
+    <div>{{ message }}</div>
+    {% elif entries %}
+    {% for entry in entries %}
+    <div class="rss_entry">
+        {% if show_source %}<div class="rss_source">- {{ entry.source }}</div>{% endif %}
+        <div class="rss_headline">{{ entry.title }}</div>
+        {% if show_date and entry.date %}<div class="rss_date">{{ entry.date }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div>No news in these feeds right now.</div>
+    {% endif %}
+</div>

@@ -1,0 +1,77 @@
+{
+    "name": "rss",
+    "description": "Headlines from any newspaper or blog with an RSS or Atom feed. No API key needed",
+    "version": "1.0.0",
+    "author": "eipporko",
+    "render_component": true,
+    "refresh_component": true,
+    "inspector": true,
+    "inspector_template": [
+        {
+            "type": "select",
+            "label": "Feed",
+            "name": "feed",
+            "value": "",
+            "options": [
+                {
+                    "value": "",
+                    "description": "All feeds"
+                }
+            ]
+        },
+        {
+            "type": "number",
+            "label": "Headlines per feed",
+            "name": "count",
+            "value": 5
+        },
+        {
+            "type": "select",
+            "label": "Order",
+            "name": "order",
+            "value": "feed",
+            "options": [
+                {
+                    "value": "feed",
+                    "description": "As the newspaper ranks them (top headlines on front page feeds)"
+                },
+                {
+                    "value": "newest",
+                    "description": "Newest first"
+                }
+            ]
+        },
+        {
+            "type": "number",
+            "label": "Only news from the last (hours, 0: no limit)",
+            "name": "max_age",
+            "value": 24
+        },
+        {
+            "type": "checkbox",
+            "label": "Show the source of each headline",
+            "name": "show_source",
+            "value": true
+        },
+        {
+            "type": "checkbox",
+            "label": "Show the date",
+            "name": "show_date",
+            "value": true
+        }
+    ],
+    "configuration": true,
+    "configuration_template": [
+        {
+            "type": "url-list",
+            "label": "Feeds",
+            "help": "A name for each feed and its address, e.g. La Voz – Coruña: https://www.lavozdegalicia.es/coruna/index.xml",
+            "name": "feeds",
+            "value": [],
+            "required": true
+        }
+    ],
+    "requirements": [
+        "feedparser>=6"
+    ]
+}

@@ -1,0 +1,30 @@
+/* same look as the newsapi app */
+.rss_container {
+    width: 100%;
+    text-align: center;
+    display: inline-block;
+}
+
+.rss_entry {
+    margin-bottom: 20px;
+}
+
+.rss_entry:last-child {
+    margin-bottom: 0;
+}
+
+.rss_source {
+    text-align: left;
+}
+
+.rss_headline {
+    text-align: left;
+    font-family: Postoni,BodoniSvtyTwoITCTT-Book,georgia,serif;
+    line-height: 1.1;
+    font-size: 1.5em;
+    font-weight: 700;
+}
+
+.rss_date {
+    text-align: left;
+}
