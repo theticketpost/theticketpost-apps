@@ -15,7 +15,11 @@ class App(Application):
 
     def __init__(self, desc, flaskApp):
         Application.__init__(self, __name__, __file__, desc, flaskApp)
-        self.flaskApp.template_filter('custom_format')(self.custom_format)
+        if hasattr(self, 'add_template_filter'):
+            self.add_template_filter(self.custom_format, 'custom_format')
+        else:
+            # theticketpost-service versions without hot (re)loading
+            self.flaskApp.template_filter('custom_format')(self.custom_format)
 
     def custom_format(self, value):
         value = float(value)
@@ -52,13 +56,17 @@ class App(Application):
             'vs_currency': currency,
             'ids': crypto_ids,
         }
-        headers = {
-            'x-cg-demo-api-key': coingecko_api_key["value"]
-        }
-        response = requests.get(url, headers=headers, params=params)
+        headers = {}
+        if coingecko_api_key and coingecko_api_key["value"]:
+            headers['x-cg-demo-api-key'] = coingecko_api_key["value"]
+        response = requests.get(url, headers=headers, params=params, timeout=15)
         data = response.json()
 
         logger.debug(data)
+        # On errors CoinGecko answers with an object instead of a list
+        if not response.ok or not isinstance(data, list):
+            logger.error(f"CoinGecko error: {data}")
+            return []
         return data
 
 

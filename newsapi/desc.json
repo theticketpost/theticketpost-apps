@@ -1,7 +1,7 @@
 {
     "name": "newsapi",
     "description": "Articles and breaking news headlines from news sources. Powered by NewsAPI",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,
@@ -273,7 +273,6 @@
                     "value": "technology",
                     "description": "Technology"
                 }
-
             ]
         },
         {

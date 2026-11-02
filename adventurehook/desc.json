@@ -1,7 +1,7 @@
 {
     "name": "adventurehook",
     "description": "Module that generates story hooks for tabletop role-playing games in seconds, saving time for game masters and enhacing the player experience. Simply input senven categories and get an exciting and unique story hook in no time.",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,
@@ -134,7 +134,6 @@
                     "description": "Western"
                 }
             ]
-             
         },
         {
             "type": "select",
@@ -218,7 +217,7 @@
                     "value": "abyss",
                     "description": "Abyss"
                 }
-            ]            
+            ]
         },
         {
             "type": "select",
@@ -302,7 +301,7 @@
                     "value": "destroy_object",
                     "description": "Destroy a dangerous object"
                 }
-            ]             
+            ]
         },
         {
             "type": "select",
@@ -386,7 +385,7 @@
                     "value": "moral_dilemmas",
                     "description": "Moral dilemmas"
                 }
-            ]            
+            ]
         },
         {
             "type": "select",
@@ -470,7 +469,7 @@
                     "value": "lost_child",
                     "description": "Lost child"
                 }
-            ]            
+            ]
         },
         {
             "type": "select",
@@ -555,7 +554,6 @@
                     "description": "Sandbox"
                 }
             ]
-            
         }
     ],
     "configuration": true,
@@ -565,9 +563,15 @@
             "label": "OpenAI APIKey",
             "name": "api_key",
             "value": ""
+        },
+        {
+            "type": "text",
+            "label": "OpenAI model",
+            "name": "model",
+            "value": "gpt-5.6-terra"
         }
     ],
     "requirements": [
-        "openai==1.13.3"
+        "openai>=3.42,<4"
     ]
 }

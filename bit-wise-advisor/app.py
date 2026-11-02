@@ -12,9 +12,11 @@ import pandas as pd
 import numpy as np
 import time
 from datetime import datetime, timedelta
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 import json
 from scipy.stats import linregress
+
+DEFAULT_MODEL = "gpt-5.6-terra"
 
 class App(Application):
 
@@ -23,26 +25,34 @@ class App(Application):
 
 
 
-    def fetch_historical_data_with_volume(self, from_timestamp, to_timestamp, currency, cryptocompare_api_key):
-        days = (to_timestamp - from_timestamp) / (24*60*60)
-        url = "https://min-api.cryptocompare.com/data/v2/histoday"
+    def fetch_historical_data_with_volume(self, currency):
+        # CryptoCompare closed its free API in 2026: daily candles come from Kraken's public API
+        # (no key, last 720 days, the last row is the current day)
+        url = "https://api.kraken.com/0/public/OHLC"
         params = {
-            'fsym': 'BTC',
-            'tsym': currency, 
-            'limit': int(days),
-            'api_key': cryptocompare_api_key
+            'pair': 'XBT' + currency.upper(),
+            'interval': 1440
         }
 
-        response = requests.get(url, params=params)
-        data = response.json()
-
-        if 'Response' in data and data['Response'] == 'Error':
-            logger.error(data)
+        try:
+            response = requests.get(url, params=params, timeout=15)
+            data = response.json()
+        except (requests.RequestException, ValueError) as e:
+            logger.error(f"Kraken API error: {e}")
             return pd.DataFrame()
-        
-        df = pd.DataFrame(data['Data']['Data'])
-        df['date'] = pd.to_datetime(df['time'], unit='s')
-        df.rename(columns={'time': 'timestamp', 'close': 'price', 'volumeto': 'volume', 'high': 'daily_max', 'low': 'daily_min' }, inplace=True)
+
+        if data.get('error'):
+            logger.error(f"Kraken API error: {data['error']}")
+            return pd.DataFrame()
+
+        pair = next(key for key in data['result'] if key != 'last')
+        columns = ['timestamp', 'open', 'daily_max', 'daily_min', 'price', 'vwap', 'base_volume', 'count']
+        df = pd.DataFrame(data['result'][pair], columns=columns)
+        for column in columns[1:7]:
+            df[column] = df[column].astype(float)
+        # volume in the quote currency, like CryptoCompare's 'volumeto'
+        df['volume'] = df['base_volume'] * df['vwap']
+        df['date'] = pd.to_datetime(df['timestamp'], unit='s')
         df.set_index('date', inplace=True)
 
         return df
@@ -110,8 +120,8 @@ class App(Application):
         price_changes = percentage_change[1:].tolist()
         price_changes = [x for x in price_changes if not np.isnan(x)]
 
-        days = np.arange(len(price_changes))
-        slope, intercept, r_value, p_value, std_err = linregress(days, price_changes)
+        x = np.arange(len(price_changes))
+        slope, intercept, r_value, p_value, std_err = linregress(x, price_changes)
         trend = "ascent" if slope > 0 else "descent" if slope < 0 else "moderate"
 
         return trend, slope, days
@@ -172,10 +182,7 @@ class App(Application):
         response = self.get_configuration_json()
         json_object = json.loads(response.data)
         api_key = next((item for item in json_object if item["name"] == "openai_api_key"), None)
-
-        client = OpenAI(
-            api_key=api_key["value"]
-        )
+        model = next((item["value"] for item in json_object if item["name"] == "model" and item["value"]), DEFAULT_MODEL)
 
         description = (
             "Imagine you're an economic journalist tasked with creating a compelling story about Bitcoin's latest market dynamics, using key data indicators. "
@@ -197,7 +204,8 @@ class App(Application):
             f"the pivot point is at {analysis_data['pivot_point']:.2f} {currency}, "
             f"with the first resistance (R1) is at {analysis_data['R1']:.2f} {currency}, "
             f"and the second resistance (R2) is at {analysis_data['R2']:.2f} {currency}. "
-            f"Analyzing the percentage change in daily prices over the past {analysis_data['days_price_change_24h']} days reveals a {analysis_data['trend_price_change_24h']} trend in price variations, characterized by a slope of {analysis_data['slope_price_change_24h']:.2f}. "
+            f"Analyzing the percentage change in daily prices over the past {analysis_data['days_price_change_24h']} days reveals a {analysis_data['trend_price_change_24h']} trend in price variations, characterized by a slope of {analysis_data['slope_price_change_24h']:.2f}, "
+            f"indicating a {'stronger' if abs(analysis_data['slope_price_change_24h']) > 0.5 else 'moderate'} trend in price movement. "
             f"Craft a {strategy} analysis strategy for investing in Bitcoin. "
             f"Incorporate the current price into the narrative and conclude with a clear recommendation on whether it is a good time to buy, sell, or hold Bitcoin positions, "
             f"In case You mention any pivot or resistance points in the analysis, You'll make sure to include their values and explain what these levels typically indicate for the market. "
@@ -214,29 +222,25 @@ class App(Application):
         ]
 
         try:
+            client = OpenAI(api_key=api_key["value"] if api_key else None)
             completion = client.chat.completions.create(
                 messages = messages,
-                model = "gpt-4-0125-preview",
+                model = model,
+                response_format = {"type": "json_object"}
             )
 
             logger.info(completion)
+            data = json.loads(completion.choices[0].message.content)
 
-        except openai.error.OpenAIError as e:
-            completion = f"OpenAI API error: {e}"
-
-
-        data = json.loads(completion.choices[0].message.content)
+        except (OpenAIError, ValueError) as e:
+            logger.error(f"OpenAI API error: {e}")
+            data = {"headline": "Error", "article": ["OpenAI API error, check theticketpost-service logs"]}
 
         return data
 
 
 
     def render_component(self):
-
-        # get app configuration parameters
-        response = self.get_configuration_json()
-        json_object = json.loads(response.data)
-        cryptocompare_api_key = next((item for item in json_object if item["name"] == "coingecko_api_key"), None)
 
         language = "english"
         currency = "usd"
@@ -254,12 +258,7 @@ class App(Application):
                     elif element["name"] == "strategy":
                         strategy = element["value"]
         
-        now = datetime.now()
-        to_date = datetime(now.year, now.month, now.day)
-        to_timestamp = int(to_date.timestamp())
-
-
-        df = self.fetch_historical_data_with_volume((to_date - timedelta(days=730)).timestamp(), to_timestamp, currency, cryptocompare_api_key)
+        df = self.fetch_historical_data_with_volume(currency)
 
         if not df.empty:
             df_ma = self.calculate_2y_ma_multiplier(df)
@@ -271,4 +270,4 @@ class App(Application):
                 recommendation = self.analyze_crypto_market(analysis_data, strategy, language, currency)
                 return render_template('bit-wise-advisor/component.html', headline=recommendation["headline"], article=recommendation["article"])
 
-        return render_template('bit-wise-advisor/component.html', headline="Error", article=["CoinGecko API error, check theticketpost-service logs"])
+        return render_template('bit-wise-advisor/component.html', headline="Error", article=["Market data API error, check theticketpost-service logs"])

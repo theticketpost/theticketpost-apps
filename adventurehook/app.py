@@ -7,9 +7,11 @@ sys.path.append(current)
 from theticketpost.application import Application
 from flask import render_template, request
 from loguru import logger
-from openai import OpenAI
+from openai import OpenAI, OpenAIError, RateLimitError
 import random
 import json
+
+DEFAULT_MODEL = "gpt-5.6-terra"
 
 class App(Application):
 
@@ -35,10 +37,7 @@ class App(Application):
         response = self.get_configuration_json()
         json_object = json.loads(response.data)
         api_key = next((item for item in json_object if item["name"] == "api_key"), None)
-
-        client = OpenAI(
-            api_key=api_key["value"]
-        )
+        model = next((item["value"] for item in json_object if item["name"] == "model" and item["value"]), DEFAULT_MODEL)
 
         # Concatenate the categories into a single input text string
         input_text = f"Please generate an adventure hook without listing the given parameters. " \
@@ -51,16 +50,15 @@ class App(Application):
                     f"Type of adventure: {adventure_type}"
 
         try:
-            # Generate a role-playing game adventure hook from the input text string using the OpenAI API
-
+            client = OpenAI(api_key=api_key["value"] if api_key else None)
+            # Generate a role-playing game adventure hook from the input text string using the OpenAI API.
+            # No 'temperature' or 'max_tokens': current reasoning models reject them, so the length is set in the prompt
             response = client.chat.completions.create(
-                model="gpt-4-0125-preview",
+                model=model,
                 messages=[
-                    {"role": "system", "content": "You are an AI trained to generate short and concise role-playing game adventure hooks based on specific parameters."},
+                    {"role": "system", "content": "You are an AI trained to generate short and concise role-playing game adventure hooks based on specific parameters. Answer with a single paragraph of at most 120 words, in plain text without markdown."},
                     {"role": "user", "content": input_text}
-                ],
-                max_tokens=250,
-                temperature=0.8
+                ]
             )
 
             logger.info(response)
@@ -70,12 +68,12 @@ class App(Application):
 
         except RateLimitError as e:
             # Handle the OpenAI API rate limit error
-            print(f"OpenAI API rate limit error: {e}")
+            logger.error(f"OpenAI API rate limit error: {e}")
             output_text = "Sorry, I've exceeded my usage quota on the OpenAI API. Please try again later."
 
-        except openai.error.OpenAIError as e:
+        except OpenAIError as e:
             # Handle other OpenAI API errors
-            print(f"OpenAI API error: {e}")
+            logger.error(f"OpenAI API error: {e}")
             output_text = "An error occurred on the OpenAI API. Please try again later."
 
         return output_text
