@@ -369,7 +369,8 @@ class App(Application):
         # AI provider isn't asked again on every load
         cache_key = f"{strategy}|{currency}|{language}"
         cached = state.setdefault("articles", {}).get(cache_key)
-        if cached and cached.get("date") == today:
+        # (one saved by a version before the figures box doesn't count)
+        if cached and cached.get("date") == today and cached.get("figures"):
             recommendation = cached
         else:
             recommendation = self.fetch_recommendation(language, currency, strategy, signal)
