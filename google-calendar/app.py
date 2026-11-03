@@ -1,133 +1,148 @@
 import os
 import sys
-import datetime
 
 current = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(current)
 
 from theticketpost.application import Application
-from flask import render_template, request
+from flask import render_template, request, jsonify
 from loguru import logger
-import json
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
-from google.auth.transport.requests import Request
-import datetime
+from markupsafe import escape
 from collections import defaultdict
+import copy
+import datetime
+import re
+import requests
+import icalendar
+import recurring_ical_events
+
 
 class App(Application):
+    """Reads the calendars from their secret iCal addresses.
+
+    Google Calendar: Settings > (your calendar) > Integrate calendar > Secret
+    address in iCal format. No Google Cloud project or OAuth needed, and it
+    works the same with Outlook, iCloud or Nextcloud calendars."""
 
     def __init__(self, desc, flaskApp):
         Application.__init__(self, __name__, __file__, desc, flaskApp)
 
 
-
-    # Function to format the date in a more readable format
-    def format_date(self, date_string):
-        date_obj = datetime.datetime.fromisoformat(date_string)
-        return date_obj.strftime("%H:%M")
-    
-
-
-    def format_event_dates(self, event):
-        start = event['start'].get('dateTime', event['start'].get('date'))
-        end = event['end'].get('dateTime', event['end'].get('date'))
-        
-        if 'T' in start:
-            formatted_start = datetime.datetime.fromisoformat(start)
-            formatted_end = datetime.datetime.fromisoformat(end)
-            all_day = False
-            start_time_str = formatted_start.strftime('%H:%M')
-            end_time_str = formatted_end.strftime('%H:%M')
-        else:
-            formatted_start = datetime.datetime.fromisoformat(start)
-            formatted_end = datetime.datetime.fromisoformat(end)
-            all_day = True
-            start_time_str = datetime.datetime.strptime(start, '%Y-%m-%d').date()
-            end_time_str = datetime.datetime.strptime(end, '%Y-%m-%d').date()
-
-        event['formatted_start'] = formatted_start
-        event['formatted_end'] = formatted_end
-        event['all_day'] = all_day
-        event['start_time_str'] = self.format_date(start)
-        event['end_time_str'] = self.format_date(end)
+    def calendars(self):
+        """[{"name", "url"}] from the app settings, in their order."""
+        entries = self.get_configuration_value("calendars", [])
+        calendars = []
+        for index, entry in enumerate(entries if isinstance(entries, list) else [], start=1):
+            url = str(entry.get("url", "")).strip()
+            if url:
+                # webcal:// is how some providers share the same https address
+                url = re.sub(r"^webcal://", "https://", url, flags=re.I)
+                calendars.append({"name": str(entry.get("name", "")).strip() or f"Calendar {index}", "url": url})
+        return calendars
 
 
+    def get_inspector_json(self):
+        """The section options, with the calendars from the settings to choose from."""
+        template = copy.deepcopy(self.desc["inspector_template"])
+        for item in template:
+            if item["name"] == "calendar":
+                item["options"] = [{"value": "", "description": "All calendars"}] + \
+                    [{"value": calendar["name"], "description": calendar["name"]} for calendar in self.calendars()]
+        return jsonify({"refresh_component": self.desc["refresh_component"], "config": template})
 
-    # Function to get the start time of an event
-    def get_event_start_time(self, event):
-        start_time = event['start'].get('dateTime', event['start'].get('date'))
-        return start_time
+
+    def fetch_calendar(self, url):
+        response = requests.get(url, timeout=20)
+        response.raise_for_status()
+        return icalendar.Calendar.from_ical(response.content)
 
 
+    def to_local(self, value):
+        """Event times as local datetimes. All-day events come as dates.
+        astimezone() also takes times without a timezone as local."""
+        if not isinstance(value, datetime.datetime):
+            value = datetime.datetime.combine(value, datetime.time.min)
+        return value.astimezone()
 
-    def get_calendar_events(self, days):
-        response = self.get_configuration_json()
-        json_object = json.loads(response.data)
-        credentials = next((item for item in json_object if item["name"] == "google-credentials"), None)
 
-        for credential in credentials["value"]:
-            creds = Credentials.from_authorized_user_info(info=credential["token"])
-            if creds:
-                if creds.expired and creds.refresh_token:
-                    creds.refresh(Request())
+    def to_event(self, component, today, calendar_name):
+        start = component.get("dtstart").dt
+        end = component.get("dtend").dt if component.get("dtend") else start
+        all_day = not isinstance(start, datetime.datetime)
+        start, end = self.to_local(start), self.to_local(end)
+        return {
+            "summary": str(component.get("summary", "")),
+            "calendar": calendar_name,
+            "location": str(component.get("location", "")),
+            "all_day": all_day,
+            "start": start,
+            "start_time_str": start.strftime("%H:%M"),
+            "end_time_str": end.strftime("%H:%M"),
+            # an event that started on an earlier day and still goes on shows today
+            "date": max(start.date(), today),
+        }
 
-                service = build('calendar', 'v3', credentials=creds)    
 
-                # List all calendars
-                calendar_list = service.calendarList().list().execute()
-                all_events = []
+    def get_calendar_events(self, calendars, days):
+        """Events from now to the end of the last day, grouped by day, and the
+        names of the calendars that couldn't be read."""
+        now = datetime.datetime.now().astimezone()
+        today = now.date()
+        until = datetime.datetime.combine(today + datetime.timedelta(days=days), datetime.time.min).astimezone()
 
-                for calendar in calendar_list['items']:
-                    if not calendar.get('hidden', False):
-                        calendar_id = calendar['id']
+        events = []
+        failed = []
+        for calendar_info in calendars:
+            try:
+                calendar = self.fetch_calendar(calendar_info["url"])
+            except Exception as e:
+                # never log the address: it gives access to the calendar
+                error = f"HTTP {e.response.status_code}" if isinstance(e, requests.HTTPError) else type(e).__name__
+                logger.error(f"Calendar {calendar_info['name']}: could not read it ({error})")
+                failed.append(calendar_info["name"])
+                continue
+            for component in recurring_ical_events.of(calendar).between(now, until):
+                events.append(self.to_event(component, today, calendar_info["name"]))
 
-                        # Get events from the current calendar
-                        now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-                        if days == 0:
-                            end_of_day = datetime.datetime.combine(datetime.date.today(), datetime.time.max)
-                            future = now
-                        else:
-                            end_of_day = datetime.datetime.combine(datetime.date.today() + datetime.timedelta(days=days), datetime.time.min)
-                                            
-
-                        future = end_of_day.isoformat() + 'Z'
-                        events_result = service.events().list(calendarId=calendar_id, timeMin=now, timeMax=future, singleEvents=True, orderBy='startTime').execute()
-                        events = events_result.get('items', [])
-
-                        # Iterate through all events
-                        for event in events:
-                            self.format_event_dates(event)
-
-                        # Combine events from all calendars
-                        all_events.extend(events)
-
-                sorted_events = sorted(all_events, key=self.get_event_start_time)
-
-                events_by_date = defaultdict(list)
-                for event in sorted_events:
-                    date_key = event['formatted_start'].date()  # Utiliza solo la parte de la fecha (sin la hora)
-                    events_by_date[date_key].append(event)
-
-                return events_by_date
-            
-        return []
-
+        # per day: all-day events first, then by time
+        events.sort(key=lambda event: (event["date"], not event["all_day"], event["start"]))
+        events_by_date = defaultdict(list)
+        for event in events:
+            events_by_date[event["date"]].append(event)
+        return events_by_date, failed
 
 
     def render_component(self):
+        days = 1
+        selected = ""
+        show_names = True
         content_type = request.headers.get('Content-Type')
         if (content_type == 'application/json'):
-            response = request.json
-            days = 1
-            for element in response:
+            for element in request.json:
                 if element["name"] == "days":
-                    days = int(element["value"]) - 1
-        events = self.get_calendar_events(days)
-        logger.info(events)
+                    try:
+                        days = max(1, int(element["value"]))
+                    except (TypeError, ValueError):
+                        pass
+                elif element["name"] == "calendar":
+                    selected = element["value"] or ""
+                elif element["name"] == "show_names":
+                    show_names = bool(element["value"])
 
+        calendars = self.calendars()
+        if not calendars:
+            return '<div style="text-align: center;">Add your calendars in the app settings</div>'
+        if selected:
+            calendars = [calendar for calendar in calendars if calendar["name"] == selected]
+            if not calendars:
+                return f'<div style="text-align: center;">There is no calendar called "{escape(selected)}" in the app settings</div>'
+
+        events_by_date, failed = self.get_calendar_events(calendars, days)
         context = {
-            'events_by_date': events,
+            'events_by_date': events_by_date,
+            'failed': failed,
+            # the name only tells something when the events come from several calendars
+            'show_names': show_names and len(calendars) > 1,
             'datetime': datetime
         }
         return render_template('google-calendar/component.html', **context)

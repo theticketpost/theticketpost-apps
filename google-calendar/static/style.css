@@ -121,3 +121,8 @@
   font-size: 0.8em;
   margin-right: 4px;
 }
+.google_calendar_owner {
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2px;
+}

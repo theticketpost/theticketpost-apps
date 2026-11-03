@@ -1,7 +1,7 @@
 {
     "name": "google-calendar",
-    "description": "Print the appointments you have for the day in google calendar",
-    "version": "1.0.1",
+    "description": "Prints your appointments for the day from Google Calendar, or any calendar with an iCal address (Outlook, iCloud, Nextcloud...)",
+    "version": "2.2.0",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,
@@ -12,18 +12,39 @@
             "label": "Days to show (including today)",
             "name": "days",
             "value": 1
+        },
+        {
+            "type": "select",
+            "label": "Calendar",
+            "name": "calendar",
+            "value": "",
+            "options": [
+                {
+                    "value": "",
+                    "description": "All calendars"
+                }
+            ]
+        },
+        {
+            "type": "checkbox",
+            "label": "Show whose calendar each event is from",
+            "name": "show_names",
+            "value": true
         }
     ],
     "configuration_template": [
         {
-            "type": "google-credentials",
-            "label": "Google Credentials",
-            "name": "google-credentials",
+            "type": "url-list",
+            "label": "Calendars",
+            "help": "A name for each calendar and its secret iCal address. Google Calendar: Settings > your calendar > Integrate calendar > Secret address in iCal format.",
+            "name": "calendars",
             "value": [],
-            "scopes": [
-                "https://www.googleapis.com/auth/calendar"
-            ]
+            "required": true
         }
     ],
-    "configuration": true
+    "configuration": true,
+    "requirements": [
+        "icalendar>=6",
+        "recurring-ical-events>=3"
+    ]
 }

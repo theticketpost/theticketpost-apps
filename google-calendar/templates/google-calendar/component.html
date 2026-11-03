@@ -1,8 +1,12 @@
 <link rel="stylesheet" href={{ url_for('google-calendarapp_blueprint.static', filename='style.css') }}>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
 <div class="google_calendar_container">
+  {% if failed %}
+  <p>Could not read: {{ failed|join(', ') }}</p>
+  {% endif %}
   {% if events_by_date|length == 0 %}
-  <p>No upcoming events.</p>
+  {# data-ttp-empty: nothing to show, the service leaves the section out of the print #}
+  <p{% if not failed %} data-ttp-empty{% endif %}>No upcoming events.</p>
   {% else %}
     {% set future_events = [] %}
     {% for date, events in events_by_date|dictsort %}
@@ -20,6 +24,9 @@
                 </div>
                 <div class="google_calendar_info">
                   <div class="google_calendar_title">{{ event.summary }}</div>
+                  {% if show_names %}
+                  <div class="google_calendar_owner">{{ event.calendar }}</div>
+                  {% endif %}
                   {% if event.location %}
                   <div class="google_calendar_location">
                     <i class="fas fa-map-marker-alt location-icon"></i>
@@ -43,7 +50,7 @@
         {% for item in future_events %}
         <li class="google_calendar_item future">
           <div class="google_calendar_time">
-            {{ item.date.strftime('%m/%d') }} - {{ item.event.summary }}
+            {{ item.date.strftime('%m/%d') }} - {{ item.event.summary }}{% if show_names %} ({{ item.event.calendar }}){% endif %}
           </div>
         </li>
         {% endfor %}      
