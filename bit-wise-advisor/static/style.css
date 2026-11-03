@@ -6,12 +6,65 @@
     text-align: left;
 }
 
-/* the headline as it always was: left aligned, with the paragraph's usual space below */
+/* The figures first: the advice in a black box, the price, then four figures
+   in two columns. Black on white only: the printer has no greys. */
+.bitwise_box {
+    text-align: center;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 2px solid #000;
+}
+
+.bitwise_signal {
+    display: inline-block;
+    padding: 4px 22px;
+    background: #000;
+    color: #fff;
+    font-size: 2em;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.bitwise_note {
+    margin-top: 4px;
+    font-size: 0.95em;
+}
+
+.bitwise_price {
+    margin: 8px 0 10px;
+    font-size: 2.1em;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.bitwise_figures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+    text-align: left;
+}
+
+.bitwise_figure {
+    border-top: 1px solid #000;
+    padding-top: 4px;
+}
+
+.bitwise_label {
+    font-size: 0.9em;
+}
+
+.bitwise_value {
+    font-size: 1.25em;
+    font-weight: 700;
+}
+
+/* smaller than before: the box above leads now */
 .bitwise_headline {
     text-align: left;
     font-family: Postoni, BodoniSvtyTwoITCTT-Book, georgia, serif;
     line-height: 1.1;
-    font-size: 1.75em;
+    font-size: 1.45em;
     font-weight: 700;
 }
 

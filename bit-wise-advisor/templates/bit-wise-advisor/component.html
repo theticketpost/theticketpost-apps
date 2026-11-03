@@ -7,6 +7,21 @@
         {% if next_reminder %}It prints again when the advice changes, or as a reminder on {{ next_reminder }}.{% else %}It prints again when the advice changes.{% endif %}
     </p>
     {% else %}
+    {% if box %}
+    <div class="bitwise_box">
+        <div class="bitwise_signal">{{ box.signal }}</div>
+        {% if box.note %}<div class="bitwise_note">{{ box.note }}</div>{% endif %}
+        <div class="bitwise_price">{{ box.price }}</div>
+        <div class="bitwise_figures">
+            {% for label, value in box.rows %}
+            <div class="bitwise_figure">
+                <div class="bitwise_label">{{ label }}</div>
+                <div class="bitwise_value">{{ value }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
     <p class="bitwise_headline">{{ headline }}</p>
     {% for paragraph in article %}
     <p class="bitwise_article">{{ paragraph }}</p>

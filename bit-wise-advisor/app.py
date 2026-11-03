@@ -19,6 +19,31 @@ from datetime import date
 from scipy.stats import linregress
 
 RECOMMENDATIONS = ("buy", "hold", "sell")
+
+# The figures box. Languages missing here use English.
+TEXTS = {
+    "english": {"buy": "Buy", "hold": "Hold", "sell": "Sell", "before": "Before: {}", "since": "Since {}",
+                "24h": "24 hours", "7d": "7 days", "ma": "vs 2-year average", "fng": "Fear & Greed",
+                "Extreme Fear": "Extreme fear", "Fear": "Fear", "Neutral": "Neutral", "Greed": "Greed", "Extreme Greed": "Extreme greed"},
+    "spanish": {"buy": "Comprar", "hold": "Mantener", "sell": "Vender", "before": "Antes: {}", "since": "Desde el {}",
+                "24h": "24 horas", "7d": "7 días", "ma": "vs media 2 años", "fng": "Miedo/codicia",
+                "Extreme Fear": "Miedo extremo", "Fear": "Miedo", "Neutral": "Neutral", "Greed": "Codicia", "Extreme Greed": "Codicia extrema"},
+    "french": {"buy": "Acheter", "hold": "Conserver", "sell": "Vendre", "before": "Avant : {}", "since": "Depuis le {}",
+               "24h": "24 heures", "7d": "7 jours", "ma": "vs moyenne 2 ans", "fng": "Peur/avidité",
+               "Extreme Fear": "Peur extrême", "Fear": "Peur", "Neutral": "Neutre", "Greed": "Avidité", "Extreme Greed": "Avidité extrême"},
+    "german": {"buy": "Kaufen", "hold": "Halten", "sell": "Verkaufen", "before": "Vorher: {}", "since": "Seit {}",
+               "24h": "24 Stunden", "7d": "7 Tage", "ma": "vs 2-Jahres-Schnitt", "fng": "Angst/Gier",
+               "Extreme Fear": "Extreme Angst", "Fear": "Angst", "Neutral": "Neutral", "Greed": "Gier", "Extreme Greed": "Extreme Gier"},
+    "italian": {"buy": "Comprare", "hold": "Mantenere", "sell": "Vendere", "before": "Prima: {}", "since": "Dal {}",
+                "24h": "24 ore", "7d": "7 giorni", "ma": "vs media 2 anni", "fng": "Paura/avidità",
+                "Extreme Fear": "Paura estrema", "Fear": "Paura", "Neutral": "Neutrale", "Greed": "Avidità", "Extreme Greed": "Avidità estrema"},
+    "portuguese": {"buy": "Comprar", "hold": "Manter", "sell": "Vender", "before": "Antes: {}", "since": "Desde {}",
+                   "24h": "24 horas", "7d": "7 dias", "ma": "vs média 2 anos", "fng": "Medo/ganância",
+                   "Extreme Fear": "Medo extremo", "Fear": "Medo", "Neutral": "Neutro", "Greed": "Ganância", "Extreme Greed": "Ganância extrema"},
+    "dutch": {"buy": "Kopen", "hold": "Houden", "sell": "Verkopen", "before": "Eerder: {}", "since": "Sinds {}",
+              "24h": "24 uur", "7d": "7 dagen", "ma": "vs 2-jaarsgemiddelde", "fng": "Angst/hebzucht",
+              "Extreme Fear": "Extreme angst", "Fear": "Angst", "Neutral": "Neutraal", "Greed": "Hebzucht", "Extreme Greed": "Extreme hebzucht"},
+}
 # days between reminders of an unchanged recommendation (0: never)
 DEFAULT_REMINDER_DAYS = 7
 
@@ -163,18 +188,26 @@ class App(Application):
         df = df.sort_index()
         ma_2y = last_row['MA_2y']
         ma_2y_multiplier = last_row['MA_2y_multiplier']
-        volume_mean_last_30_days = self.calculate_average_volume_last_x_days(df, 30)
-        fear_and_greed_index = self.fetch_fear_and_greed_index(1).iloc[-1]['fear_and_greed_index']
+        # Kraken's last candle is today's, still open: at 2 am its volume is tiny and
+        # looks like a collapse. Volumes compare complete days only.
+        complete = df.iloc[:-1]
+        volume_mean_last_30_days = self.calculate_average_volume_last_x_days(complete, 30)
+        fear_and_greed = self.fetch_fear_and_greed_index(1).iloc[-1]
+        fear_and_greed_index = fear_and_greed['fear_and_greed_index']
 
         diff_ma_2y = df['price'].iloc[-1] - ma_2y
         diff_ma_2y_percent = (diff_ma_2y / ma_2y) * 100
         diff_ma_2y_multiplier = df['price'].iloc[-1] - ma_2y_multiplier
         diff_ma_2y_multiplier_percent = (diff_ma_2y_multiplier / ma_2y_multiplier) * 100
-        diff_volume_last_30_days = df['volume'].iloc[-1] - volume_mean_last_30_days
+        diff_volume_last_30_days = complete['volume'].iloc[-1] - volume_mean_last_30_days
         diff_volume_percent_last_30_days = ( diff_volume_last_30_days / volume_mean_last_30_days ) * 100
-        
-        diff_volume_last_24_h = df['volume'].iloc[-1] - df['volume'].iloc[-2]
-        diff_volume_percent_last_24_h = ( diff_volume_last_24_h / df['volume'].iloc[-2] ) * 100
+
+        diff_volume_last_24_h = complete['volume'].iloc[-1] - complete['volume'].iloc[-2]
+        diff_volume_percent_last_24_h = ( diff_volume_last_24_h / complete['volume'].iloc[-2] ) * 100
+
+        price = df['price'].iloc[-1]
+        change_24h_percent = (price / df['price'].iloc[-2] - 1) * 100
+        change_7d_percent = (price / df['price'].iloc[-8] - 1) * 100
 
         results = {
             'current_price': df['price'].iloc[-1],
@@ -191,6 +224,9 @@ class App(Application):
             'diff_volume_last_24_h': diff_volume_last_24_h,
             'diff_volume_percent_last_24_h': diff_volume_percent_last_24_h,
             'fear_and_greed_index': fear_and_greed_index,
+            'fear_and_greed_class': str(fear_and_greed.get('value_classification', '')),
+            'change_24h_percent': change_24h_percent,
+            'change_7d_percent': change_7d_percent,
             'pivot_point': latest_pivot_points['pivot_point'],
             'R1': latest_pivot_points['R1'],
             'R2': latest_pivot_points['R2'],
@@ -216,7 +252,10 @@ class App(Application):
             "'recommendation' is the advice the article concludes with, as one of those three English words. "
             "The headline needs to succinctly summarize Bitcoin's current market status. The article should then offer a deep dive into Bitcoin's recent market behavior. "
             "Please ensure that you divide your ideas into separate short paragraphs. This will enhance the readability of the text once it is printed. "
-            "Please keep the entire article concise, aiming for a maximum of 100 words to ensure it's digestible and impactful for a wide audience. This constraint challenges you to distill your insights into the most engaging and informative essence possible."
+            "Please keep the entire article concise, aiming for a maximum of 60 words to ensure it's digestible and impactful for a wide audience. "
+            "The printed ticket shows, above your article, a box with the recommendation, the price, the 24 hour and 7 day price change, the distance to the 2-year moving average and the Fear and Greed Index. "
+            "Don't repeat those figures and don't list numbers: explain in plain words what the data means together and why that is the recommendation. "
+            "Mention another figure (a resistance level, the volume) only when it is key to the story."
         )
 
         user_input = (
@@ -224,8 +263,9 @@ class App(Application):
             f"Bitcoin's current price at {analysis_data['current_price']:.2f} {currency}, "
             f"which is {analysis_data['diff_ma_2y_percent']:.2f}% {'above the 2-year moving average, indicating potential overvaluation,' if analysis_data['diff_ma_2y_percent'] > 0 else 'below the 2-year moving average, suggesting potential undervaluation,'} "
             f"and {analysis_data['diff_ma_2y_multiplier_percent']:.2f}% {'above the 2-year MA x5, signaling extreme overvaluation,' if analysis_data['diff_ma_2y_multiplier_percent'] > 0 else 'below the 2-year MA x5, indicating more room for growth,'} "
-            f"the trading volume has changed by {analysis_data['diff_volume_percent_last_30_days']:.2f}% compared to the last 30-day volume average, "
-            f"the trading volume has changed by {analysis_data['diff_volume_percent_last_24_h']:.2f}% compared to the last 24 hours, "
+            f"the price changed {analysis_data['change_24h_percent']:.2f}% in 24 hours and {analysis_data['change_7d_percent']:.2f}% in 7 days, "
+            f"yesterday's trading volume was {analysis_data['diff_volume_percent_last_30_days']:.2f}% away from the 30-day average, "
+            f"and {analysis_data['diff_volume_percent_last_24_h']:.2f}% away from the day before, "
             f"and the Fear and Greed Index is at {analysis_data.get('fear_and_greed_index', 'not provided')}. "
             f"the pivot point is at {analysis_data['pivot_point']:.2f} {currency}, "
             f"with the first resistance (R1) is at {analysis_data['R1']:.2f} {currency}, "
@@ -233,13 +273,13 @@ class App(Application):
             f"Analyzing the percentage change in daily prices over the past {analysis_data['days_price_change_24h']} days reveals a {analysis_data['trend_price_change_24h']} trend in price variations, characterized by a slope of {analysis_data['slope_price_change_24h']:.2f}, "
             f"indicating a {'stronger' if abs(analysis_data['slope_price_change_24h']) > 0.5 else 'moderate'} trend in price movement. "
             f"Craft a {strategy} analysis strategy for investing in Bitcoin. "
-            f"Incorporate the current price into the narrative and conclude with a clear recommendation on whether it is a good time to buy, sell, or hold Bitcoin positions, "
+            f"Don't write the current price or the percentages (the box above shows them), and conclude with a clear recommendation on whether it is a good time to buy, sell, or hold Bitcoin positions, "
             f"In case You mention any pivot or resistance points in the analysis, You'll make sure to include their values and explain what these levels typically indicate for the market. "
             f"For the long haul, here's a golden nugget: it’s usually a smart move to buy Bitcoin when its price is chillin' below the 2-year MA, kind of like snagging a bargain before the price jumps. "
             f"And when it’s partying way above the 2-year MAx5? That might be your cue to consider selling. Why? Because that's like riding the elevator to the top floor and stepping out before it heads back down. "
             f"This way, you’re maximizing your profit potential by buying low and selling high. Just remember, the crypto market can be as unpredictable as weather in April, so always do your due diligence!"
             f"When you talk about prices, let’s keep things crystal clear by sticking to the format and symbols that match our language and locale instead of write the currency code. "
-            f"Provide the output in {language} aiming for a maximum of 100 words."
+            f"Provide the output in {language} aiming for a maximum of 60 words."
         )
         if previous:
             # keeps the advice steady: without it, it can flip between hold and buy from one day to the next
@@ -278,6 +318,9 @@ class App(Application):
             age = (date.fromisoformat(today) - date.fromisoformat(announced)).days
             if not reminder_days or age < reminder_days:
                 return False
+        if signal.get("recommendation") != recommendation:
+            signal["previous"] = signal.get("recommendation")
+            signal["since"] = today
         signal["recommendation"] = recommendation
         signal["announced"] = today
         return True
@@ -345,11 +388,64 @@ class App(Application):
         self.save_state(state)
 
         if printed:
-            return render_template('bit-wise-advisor/component.html', headline=recommendation["headline"], article=recommendation["article"])
+            box = self.box(recommendation, signal if printing else self.preview_signal(signal, recommendation, today), language, currency, today)
+            return render_template('bit-wise-advisor/component.html', headline=recommendation["headline"], article=recommendation["article"], box=box)
         # nothing new: the service leaves the section out of the print
         return render_template('bit-wise-advisor/component.html', unchanged=True,
             recommendation=signal["recommendation"], since=signal["announced"],
             next_reminder=(date.fromisoformat(signal["announced"]) + timedelta(days=reminder_days)).isoformat() if reminder_days else None)
+
+
+
+    def preview_signal(self, signal, recommendation, today):
+        """The editor's copy of the signal, as the next print would leave it."""
+        preview = dict(signal)
+        self.should_print(preview, recommendation["recommendation"], today, 1)
+        return preview
+
+
+
+    def box(self, recommendation, signal, language, currency, today):
+        """The figures box above the article, formatted for the language. None
+        without figures (an article cached by an older version, an AI error)."""
+        figures = recommendation.get("figures")
+        if not figures or not recommendation.get("recommendation"):
+            return None
+        texts = TEXTS.get(language, TEXTS["english"])
+        english = texts is TEXTS["english"]
+
+        def number(value, decimals):
+            text = f"{value:,.{decimals}f}"
+            # 1,234.5 in English, 1.234,5 elsewhere
+            return text if english else text.replace(",", " ").replace(".", ",").replace(" ", ".")
+
+        def percent(value):
+            sign = "+" if value > 0 else ""
+            return f"{sign}{number(value, 1)}%" if english else f"{sign}{number(value, 1)} %"
+
+        symbol = {"usd": "$", "eur": "€", "gbp": "£"}.get(currency, currency.upper())
+        price = number(figures["current_price"], 0)
+        since = signal.get("since") or signal.get("announced")
+        previous = signal.get("previous")
+        if previous and since == today:
+            note = texts["before"].format(texts[previous])
+        elif since and since != today:
+            day = date.fromisoformat(since)
+            note = texts["since"].format(day.strftime("%b %-d") if english else day.strftime("%d/%m"))
+        else:
+            note = ""
+        fear_class = figures.get("fear_and_greed_class", "")
+        return {
+            "signal": texts[recommendation["recommendation"]],
+            "note": note,
+            "price": f"{symbol}{price}" if english else f"{price} {symbol}",
+            "rows": [
+                (texts["24h"], percent(figures["change_24h_percent"])),
+                (texts["7d"], percent(figures["change_7d_percent"])),
+                (texts["ma"], percent(figures["diff_ma_2y_percent"])),
+                (texts["fng"], f'{figures["fear_and_greed_index"]} · {texts.get(fear_class, fear_class)}'),
+            ],
+        }
 
 
 
@@ -366,6 +462,11 @@ class App(Application):
                 previous = None
                 if signal.get("recommendation"):
                     previous = {"recommendation": signal["recommendation"], "date": signal["announced"]}
-                return self.analyze_crypto_market(analysis_data, strategy, language, currency, previous)
+                data = self.analyze_crypto_market(analysis_data, strategy, language, currency, previous)
+                data["figures"] = {key: float(analysis_data[key]) for key in
+                                   ("current_price", "change_24h_percent", "change_7d_percent", "diff_ma_2y_percent")}
+                data["figures"]["fear_and_greed_index"] = int(analysis_data["fear_and_greed_index"])
+                data["figures"]["fear_and_greed_class"] = analysis_data["fear_and_greed_class"]
+                return data
 
         return None
