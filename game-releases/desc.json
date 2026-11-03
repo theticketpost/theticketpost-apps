@@ -1,0 +1,123 @@
+{
+    "name": "game-releases",
+    "description": "Video games coming out this week on your platforms, the most awaited first. Powered by RAWG",
+    "version": "1.0.0",
+    "author": "eipporko",
+    "render_component": true,
+    "refresh_component": true,
+    "inspector": true,
+    "inspector_template": [
+        {
+            "type": "select",
+            "label": "Period",
+            "name": "period",
+            "value": "week",
+            "options": [
+                {
+                    "value": "today",
+                    "description": "Today"
+                },
+                {
+                    "value": "week",
+                    "description": "This week (Monday to Sunday)"
+                },
+                {
+                    "value": "next7",
+                    "description": "Next 7 days"
+                },
+                {
+                    "value": "next30",
+                    "description": "Next 30 days"
+                },
+                {
+                    "value": "month",
+                    "description": "This month"
+                }
+            ]
+        },
+        {
+            "type": "checkbox",
+            "label": "PlayStation",
+            "name": "platform_playstation",
+            "value": true
+        },
+        {
+            "type": "checkbox",
+            "label": "Xbox",
+            "name": "platform_xbox",
+            "value": true
+        },
+        {
+            "type": "checkbox",
+            "label": "Nintendo",
+            "name": "platform_nintendo",
+            "value": true
+        },
+        {
+            "type": "checkbox",
+            "label": "PC",
+            "name": "platform_pc",
+            "value": true
+        },
+        {
+            "type": "checkbox",
+            "label": "Mobile (iOS, Android)",
+            "name": "platform_mobile",
+            "value": false
+        },
+        {
+            "type": "number",
+            "label": "Games to show",
+            "name": "count",
+            "value": 8
+        },
+        {
+            "type": "checkbox",
+            "label": "Picture of the most awaited game",
+            "name": "show_image",
+            "value": true
+        },
+        {
+            "type": "select",
+            "label": "Language",
+            "name": "language",
+            "value": "es",
+            "options": [
+                {
+                    "value": "es",
+                    "description": "Español"
+                },
+                {
+                    "value": "en",
+                    "description": "English"
+                },
+                {
+                    "value": "fr",
+                    "description": "Français"
+                },
+                {
+                    "value": "de",
+                    "description": "Deutsch"
+                },
+                {
+                    "value": "it",
+                    "description": "Italiano"
+                },
+                {
+                    "value": "pt",
+                    "description": "Português"
+                }
+            ]
+        }
+    ],
+    "configuration_template": [
+        {
+            "type": "text",
+            "label": "RAWG API key",
+            "help": "Free: sign up at rawg.io/apidocs and copy your API key.",
+            "name": "api_key",
+            "value": ""
+        }
+    ],
+    "configuration": true
+}

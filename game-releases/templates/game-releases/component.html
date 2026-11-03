@@ -1,0 +1,45 @@
+<link rel="stylesheet" href={{ url_for('game-releasesapp_blueprint.static', filename='style.css') }}>
+<div class="games">
+    <div class="games_pixels"></div>
+    <div class="games_title">{{ texts.title }}</div>
+    <div class="games_subtitle">{{ texts.subtitle }}</div>
+    <div class="games_pixels"></div>
+    <div class="games_heading">{{ heading }}</div>
+
+    {% if featured %}
+    <div class="games_featured">
+        <div class="games_badge"><span class="games_symbol">★</span> {{ texts.featured }} <span class="games_symbol">★</span></div>
+        {% if show_image and featured.image %}
+        <img class="games_image" src="{{ featured.image }}" alt="">
+        {% endif %}
+        <div class="games_featured_name">{{ featured.name }}</div>
+        <div class="games_featured_date">{{ featured.label }}</div>
+        {% if featured.platforms %}
+        <div class="games_platforms games_platforms_center">
+            {% for platform in featured.platforms %}<span class="games_platform">{{ platform }}</span>{% endfor %}
+        </div>
+        {% endif %}
+        {% if featured.genres %}<div class="games_genres">{{ featured.genres|join(' · ') }}</div>{% endif %}
+    </div>
+
+    {% for day in days %}
+    <div class="games_day">
+        <div class="games_day_label"><span class="games_symbol">▶</span> {{ day.label }}</div>
+        {% for game in day.games %}
+        <div class="games_game">
+            <div class="games_name">{{ game.name }}</div>
+            {% if game.platforms %}
+            <div class="games_platforms">
+                {% for platform in game.platforms %}<span class="games_platform">{{ platform }}</span>{% endfor %}
+            </div>
+            {% endif %}
+            {% if game.genres %}<div class="games_genres">{{ game.genres|join(' · ') }}</div>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+    {% else %}
+    {# data-ttp-empty: nothing to show, the service leaves the section out of the print #}
+    <div class="games_empty" data-ttp-empty>{{ texts.nothing }}</div>
+    {% endif %}
+</div>

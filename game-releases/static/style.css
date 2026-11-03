@@ -1,0 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@500;700&display=swap');
+
+.games {
+    text-align: left;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    line-height: 1.25;
+}
+
+/* a row of pixels, like the border of an old game screen */
+.games_pixels {
+    height: 8px;
+    background:
+        repeating-linear-gradient(90deg, #000000 0 4px, transparent 4px 8px) 0 0 / 100% 4px no-repeat,
+        repeating-linear-gradient(90deg, transparent 0 4px, #000000 4px 8px) 0 4px / 100% 4px no-repeat;
+}
+
+.games_title {
+    padding-top: 12px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 1.35em;
+    line-height: 1.2;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.games_subtitle {
+    padding: 8px 0 10px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.6em;
+    letter-spacing: 0.1em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.games_heading {
+    margin-top: 8px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.games_heading::first-letter {
+    text-transform: uppercase;
+}
+
+.games_featured {
+    margin-top: 12px;
+    padding: 10px;
+    border: 3px solid #000000;
+    text-align: center;
+}
+
+.games_badge {
+    display: inline-block;
+    margin-bottom: 8px;
+    padding: 4px 8px;
+    background: #000000;
+    color: #FFFFFF;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55em;
+    text-transform: uppercase;
+}
+
+/* grey photos dither to an even dot pattern: lift the contrast a little */
+.games_image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.2) brightness(1.05);
+}
+
+.games_featured_name {
+    margin-top: 8px;
+    font-size: 1.6em;
+    font-weight: 700;
+    line-height: 1.05;
+    overflow-wrap: break-word;
+}
+
+.games_featured_date {
+    margin-top: 4px;
+    font-size: 0.95em;
+}
+
+.games_featured_date::first-letter {
+    text-transform: uppercase;
+}
+
+.games_platforms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.games_platforms_center {
+    justify-content: center;
+}
+
+.games_platform {
+    padding: 1px 5px;
+    border: 2px solid #000000;
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.games_genres {
+    margin-top: 5px;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.games_day {
+    margin-top: 14px;
+}
+
+.games_day_label {
+    padding: 5px 8px;
+    background: #000000;
+    color: #FFFFFF;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.6em;
+    line-height: 1.4;
+    text-transform: uppercase;
+}
+
+.games_game {
+    padding: 8px 0;
+    border-bottom: 1px dashed #000000;
+}
+
+.games_game:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.games_name {
+    font-size: 1.2em;
+    font-weight: 700;
+    line-height: 1.1;
+    overflow-wrap: break-word;
+}
+
+.games_empty {
+    padding: 12px 0;
+    text-align: center;
+}
+
+/* the pixel font has no symbols */
+.games_symbol {
+    font-family: system-ui, sans-serif;
+    font-size: 1.3em;
+    line-height: 0;
+}
