@@ -39,7 +39,9 @@ class App(Application):
     def pick_slots(self, items, timezone_offset, hour_from, hour_to):
         """Forecast slots between hour_from and hour_to (local time, inclusive) of
         the first day that still has some: today, or tomorrow once today's range
-        is over. Returns (slots, is_tomorrow)."""
+        is over. When part of today's range has already passed, the forecast no
+        longer has those slots: fill the row with the slots that come after it.
+        Returns (slots, is_tomorrow)."""
         if hour_from is None or hour_to is None:
             return items[:DEFAULT_ITEMS], False
 
@@ -51,9 +53,17 @@ class App(Application):
             if hour_from <= local.hour <= hour_to:
                 days.setdefault(local.date(), []).append(item)
 
-        for day in sorted(days):
-            return days[day], day != today
-        return [], False
+        if not days:
+            return [], False
+
+        day = min(days)
+        slots = days[day]
+        if day == today:
+            # a full day of the range (tomorrow's) tells how many slots fit in it
+            wanted = min(DEFAULT_ITEMS, max(len(s) for s in days.values()))
+            start = items.index(slots[-1]) + 1
+            slots = slots + items[start:start + wanted - len(slots)]
+        return slots, day != today
 
 
     def get_forecast(self, lon, lat, hour_from=None, hour_to=None):
