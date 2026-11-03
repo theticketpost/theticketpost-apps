@@ -25,7 +25,7 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) theticketpost"}
 TIMEOUT = 15
 
 # AI editor
-MAX_CANDIDATES = 80       # news sent to the AI at most, to keep the prompt small
+MAX_CANDIDATES = 150      # news sent to the AI at most, to keep the prompt small
 SUMMARY_CHARS = 200       # of each news item's summary
 HISTORY_DAYS = 4          # printed headlines it remembers, so it doesn't repeat stories
 CACHED_CHOICES = 30       # front pages it keeps, so reloading the editor doesn't ask again
@@ -223,7 +223,10 @@ class App(Application):
             # a headline already printed never brings anything new (the AI doesn't
             # always notice): only other headlines of those stories reach it
             printed_titles = {item["title"].lower() for item in history}
-            candidates = [item for item in candidates if item["title"].lower() not in printed_titles][:MAX_CANDIDATES]
+            candidates = [item for item in candidates if item["title"].lower() not in printed_titles]
+            # with many feeds, every feed gets its top news in: the first of each
+            # feed, then the second... (sorted() keeps the feeds' order on ties)
+            candidates = sorted(candidates, key=lambda item: item["rank"])[:MAX_CANDIDATES]
             if not candidates:
                 return [], None
 

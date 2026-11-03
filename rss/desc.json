@@ -1,7 +1,7 @@
 {
     "name": "rss",
     "description": "Headlines from any newspaper or blog with an RSS or Atom feed, optionally picked by an AI editor following your editorial line. No API key needed",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,
