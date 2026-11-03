@@ -1,7 +1,15 @@
 <link rel="stylesheet" href={{ url_for('bit-wise-advisorapp_blueprint.static', filename='style.css') }}>
 <div class="bitwise">
+    {% if unchanged %}
+    {# data-ttp-empty: the advice hasn't changed, the service leaves the section out of the print #}
+    <p class="bitwise_unchanged" data-ttp-empty>
+        Still <strong>{{ recommendation }}</strong>, as printed on {{ since }}.
+        {% if next_reminder %}It prints again when the advice changes, or as a reminder on {{ next_reminder }}.{% else %}It prints again when the advice changes.{% endif %}
+    </p>
+    {% else %}
     <p class="bitwise_headline">{{ headline }}</p>
     {% for paragraph in article %}
     <p class="bitwise_article">{{ paragraph }}</p>
     {% endfor %}
+    {% endif %}
 </div>

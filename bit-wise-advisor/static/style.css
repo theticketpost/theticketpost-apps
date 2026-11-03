@@ -26,3 +26,9 @@
 .bitwise_headline + .bitwise_article {
     text-indent: 0;
 }
+
+/* editor only: the section isn't printed while the advice doesn't change */
+.bitwise_unchanged {
+    margin: 0;
+    line-height: 1.4;
+}

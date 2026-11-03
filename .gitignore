@@ -2,3 +2,4 @@ __pycache__
 config.json
 */static/files/
 !/image/static/files/theticketpost_logo.svg
+state.json

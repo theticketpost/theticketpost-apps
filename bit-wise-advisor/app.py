@@ -14,12 +14,41 @@ import time
 from datetime import datetime, timedelta
 import theticketpost.llm as llm
 import json
+import threading
+from datetime import date
 from scipy.stats import linregress
+
+RECOMMENDATIONS = ("buy", "hold", "sell")
+# days between reminders of an unchanged recommendation (0: never)
+DEFAULT_REMINDER_DAYS = 7
 
 class App(Application):
 
     def __init__(self, desc, flaskApp):
         Application.__init__(self, __name__, __file__, desc, flaskApp)
+        # What was last printed, so an unchanged recommendation isn't printed every day.
+        # Kept next to the app's config.json: store updates don't overwrite it.
+        self.state_path = os.path.join(self.root_path, "state.json")
+        self.state_lock = threading.Lock()
+
+
+
+    def load_state(self):
+        try:
+            with open(self.state_path) as f:
+                state = json.load(f)
+            return state if isinstance(state, dict) else {}
+        except (OSError, ValueError):
+            return {}
+
+
+
+    def save_state(self, state):
+        try:
+            with open(self.state_path, "w") as f:
+                json.dump(state, f, indent=2)
+        except OSError as e:
+            logger.error(f"Bit-wise advisor: could not save its state: {e}")
 
 
 
@@ -174,7 +203,7 @@ class App(Application):
 
 
 
-    def analyze_crypto_market(self, analysis_data, strategy, language='English', currency='usd'):
+    def analyze_crypto_market(self, analysis_data, strategy, language='English', currency='usd', previous=None):
 
         # get app configuration parameters
         provider = self.get_configuration_value("llm_provider", "openai")
@@ -183,7 +212,8 @@ class App(Application):
         description = (
             "Imagine you're an economic journalist tasked with creating a compelling story about Bitcoin's latest market dynamics, using key data indicators. "
             "Is not allowed markdown. Your assignment is to produce a JSON output with two sections: a 'headline' and an 'article'. The 'article' should be presented as a list of paragraphs, each containing plain text (not JSON objects). "
-            "The output must to have this scheme { 'headline': 'the headline', 'article': ['paragraph1', 'paragraph2', ... ]}. "
+            "The output must to have this scheme { 'headline': 'the headline', 'article': ['paragraph1', 'paragraph2', ... ], 'recommendation': 'buy' | 'hold' | 'sell' }. "
+            "'recommendation' is the advice the article concludes with, as one of those three English words. "
             "The headline needs to succinctly summarize Bitcoin's current market status. The article should then offer a deep dive into Bitcoin's recent market behavior. "
             "Please ensure that you divide your ideas into separate short paragraphs. This will enhance the readability of the text once it is printed. "
             "Please keep the entire article concise, aiming for a maximum of 100 words to ensure it's digestible and impactful for a wide audience. This constraint challenges you to distill your insights into the most engaging and informative essence possible."
@@ -211,6 +241,12 @@ class App(Application):
             f"When you talk about prices, let’s keep things crystal clear by sticking to the format and symbols that match our language and locale instead of write the currency code. "
             f"Provide the output in {language} aiming for a maximum of 100 words."
         )
+        if previous:
+            # keeps the advice steady: without it, it can flip between hold and buy from one day to the next
+            user_input += (
+                f" Your previous recommendation, on {previous['date']}, was to {previous['recommendation']}. "
+                f"Keep it unless the data has clearly changed enough to justify a different one."
+            )
 
         messages = [
             {"role": "system", "content": description},
@@ -221,9 +257,30 @@ class App(Application):
             data = llm.chat_json(provider, messages, model=model)
         except llm.LLMError as e:
             logger.error(f"Bit-wise advisor: {e}")
-            data = {"headline": "No article today", "article": [str(e)]}
+            return {"headline": "No article today", "article": [str(e)], "recommendation": None}
 
+        recommendation = str(data.get("recommendation", "")).strip().lower()
+        data["recommendation"] = recommendation if recommendation in RECOMMENDATIONS else None
         return data
+
+
+
+    def should_print(self, signal, recommendation, today, reminder_days):
+        """Whether today's ticket prints the article: when the recommendation changed,
+        when the last print is reminder_days old, or again on the day it was printed
+        (the editor and the print render it more than once). Updates `signal`."""
+        if recommendation is None:
+            return True
+        announced = signal.get("announced")
+        if signal.get("recommendation") == recommendation and announced:
+            if announced == today:
+                return True
+            age = (date.fromisoformat(today) - date.fromisoformat(announced)).days
+            if not reminder_days or age < reminder_days:
+                return False
+        signal["recommendation"] = recommendation
+        signal["announced"] = today
+        return True
 
 
 
@@ -232,6 +289,7 @@ class App(Application):
         language = "english"
         currency = "usd"
         strategy = "long-term conservative"
+        reminder_days = DEFAULT_REMINDER_DAYS
 
         content_type = request.headers.get('Content-Type')
         if (content_type == 'application/json'):
@@ -244,7 +302,49 @@ class App(Application):
                         currency = element["value"]
                     elif element["name"] == "strategy":
                         strategy = element["value"]
-        
+                    elif element["name"] == "reminder":
+                        try:
+                            reminder_days = max(0, int(element["value"]))
+                        except (TypeError, ValueError):
+                            pass
+
+        with self.state_lock:
+            return self.render_article(language, currency, strategy, reminder_days)
+
+
+
+    def render_article(self, language, currency, strategy, reminder_days):
+        state = self.load_state()
+        today = date.today().isoformat()
+        # a recommendation depends on the strategy and the currency, not on the language
+        signal = state.setdefault("signals", {}).setdefault(f"{strategy}|{currency}", {})
+
+        # one article a day: the editor and the print show the same one, and the
+        # AI provider isn't asked again on every load
+        cache_key = f"{strategy}|{currency}|{language}"
+        cached = state.setdefault("articles", {}).get(cache_key)
+        if cached and cached.get("date") == today:
+            recommendation = cached
+        else:
+            recommendation = self.fetch_recommendation(language, currency, strategy, signal)
+            if recommendation is None:
+                return render_template('bit-wise-advisor/component.html', headline="Error", article=["Market data API error, check theticketpost-service logs"])
+            if recommendation["recommendation"]:
+                state["articles"][cache_key] = {**recommendation, "date": today}
+
+        printed = self.should_print(signal, recommendation["recommendation"], today, reminder_days)
+        self.save_state(state)
+
+        if printed:
+            return render_template('bit-wise-advisor/component.html', headline=recommendation["headline"], article=recommendation["article"])
+        # nothing new: the service leaves the section out of the print
+        return render_template('bit-wise-advisor/component.html', unchanged=True,
+            recommendation=signal["recommendation"], since=signal["announced"],
+            next_reminder=(date.fromisoformat(signal["announced"]) + timedelta(days=reminder_days)).isoformat() if reminder_days else None)
+
+
+
+    def fetch_recommendation(self, language, currency, strategy, signal):
         df = self.fetch_historical_data_with_volume(currency)
 
         if not df.empty:
@@ -254,7 +354,9 @@ class App(Application):
                 latest_pivot_points = self.calculate_pivot_points(df_ma)
 
                 analysis_data = self.get_analysis_data(df_ma, latest_pivot_points)
-                recommendation = self.analyze_crypto_market(analysis_data, strategy, language, currency)
-                return render_template('bit-wise-advisor/component.html', headline=recommendation["headline"], article=recommendation["article"])
+                previous = None
+                if signal.get("recommendation"):
+                    previous = {"recommendation": signal["recommendation"], "date": signal["announced"]}
+                return self.analyze_crypto_market(analysis_data, strategy, language, currency, previous)
 
-        return render_template('bit-wise-advisor/component.html', headline="Error", article=["Market data API error, check theticketpost-service logs"])
+        return None
