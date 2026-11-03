@@ -1,0 +1,38 @@
+<link rel="stylesheet" href={{ url_for('movie-releasesapp_blueprint.static', filename='style.css') }}>
+<div class="cine">
+    <div class="cine_strip"></div>
+    <div class="cine_marquee">{{ texts.title }}</div>
+    <div class="cine_strip"></div>
+    <div class="cine_heading">{{ heading }}</div>
+
+    {% if movies %}
+    {% for movie in movies %}
+    <div class="cine_movie">
+        <div class="cine_row">
+            {% if show_posters and movie.poster %}
+            <img class="cine_poster" src="{{ movie.poster }}" alt="">
+            {% endif %}
+            <div class="cine_info">
+                {% if movie.day_label %}<div class="cine_day">{{ movie.day_label }}</div>{% endif %}
+                <div class="cine_title">{{ movie.title }}</div>
+                {% if movie.original_title %}<div class="cine_original">{{ movie.original_title }}</div>{% endif %}
+                {% if movie.genres %}<div class="cine_genres">{{ movie.genres|join(' · ') }}</div>{% endif %}
+                {% if movie.runtime or movie.rating %}
+                <div class="cine_meta">
+                    {% if movie.runtime %}<span>{{ movie.runtime }}</span>{% endif %}
+                    {% if movie.rating %}<span class="cine_rating">{{ movie.rating }}</span>{% endif %}
+                </div>
+                {% endif %}
+                {% if movie.directors %}<div class="cine_director">{{ texts.director }} {{ movie.directors|join(', ') }}</div>{% endif %}
+                {% if show_overview and movie.overview %}
+                <div class="cine_overview">{{ movie.overview }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    {# data-ttp-empty: nothing to show, the service leaves the section out of the print #}
+    <div class="cine_empty" data-ttp-empty>{{ texts.nothing }}</div>
+    {% endif %}
+</div>

@@ -1,0 +1,335 @@
+{
+    "name": "movie-releases",
+    "description": "This week's cinema releases in any country, like a newspaper film listing: poster, genre, running time, age rating and director. Powered by TMDB",
+    "version": "1.0.0",
+    "author": "eipporko",
+    "render_component": true,
+    "refresh_component": true,
+    "inspector": true,
+    "inspector_template": [
+        {
+            "type": "select",
+            "label": "Country",
+            "name": "country",
+            "value": "ES",
+            "options": [
+                {
+                    "value": "ES",
+                    "description": "ES - Spain"
+                },
+                {
+                    "value": "AR",
+                    "description": "AR - Argentina"
+                },
+                {
+                    "value": "AU",
+                    "description": "AU - Australia"
+                },
+                {
+                    "value": "AT",
+                    "description": "AT - Austria"
+                },
+                {
+                    "value": "BE",
+                    "description": "BE - Belgium"
+                },
+                {
+                    "value": "BR",
+                    "description": "BR - Brazil"
+                },
+                {
+                    "value": "CA",
+                    "description": "CA - Canada"
+                },
+                {
+                    "value": "CL",
+                    "description": "CL - Chile"
+                },
+                {
+                    "value": "CO",
+                    "description": "CO - Colombia"
+                },
+                {
+                    "value": "CR",
+                    "description": "CR - Costa Rica"
+                },
+                {
+                    "value": "CZ",
+                    "description": "CZ - Czechia"
+                },
+                {
+                    "value": "DK",
+                    "description": "DK - Denmark"
+                },
+                {
+                    "value": "EC",
+                    "description": "EC - Ecuador"
+                },
+                {
+                    "value": "FI",
+                    "description": "FI - Finland"
+                },
+                {
+                    "value": "FR",
+                    "description": "FR - France"
+                },
+                {
+                    "value": "DE",
+                    "description": "DE - Germany"
+                },
+                {
+                    "value": "GR",
+                    "description": "GR - Greece"
+                },
+                {
+                    "value": "HK",
+                    "description": "HK - Hong Kong"
+                },
+                {
+                    "value": "HU",
+                    "description": "HU - Hungary"
+                },
+                {
+                    "value": "IN",
+                    "description": "IN - India"
+                },
+                {
+                    "value": "ID",
+                    "description": "ID - Indonesia"
+                },
+                {
+                    "value": "IE",
+                    "description": "IE - Ireland"
+                },
+                {
+                    "value": "IL",
+                    "description": "IL - Israel"
+                },
+                {
+                    "value": "IT",
+                    "description": "IT - Italy"
+                },
+                {
+                    "value": "JP",
+                    "description": "JP - Japan"
+                },
+                {
+                    "value": "KR",
+                    "description": "KR - South Korea"
+                },
+                {
+                    "value": "MX",
+                    "description": "MX - Mexico"
+                },
+                {
+                    "value": "NL",
+                    "description": "NL - Netherlands"
+                },
+                {
+                    "value": "NZ",
+                    "description": "NZ - New Zealand"
+                },
+                {
+                    "value": "NO",
+                    "description": "NO - Norway"
+                },
+                {
+                    "value": "PA",
+                    "description": "PA - Panama"
+                },
+                {
+                    "value": "PE",
+                    "description": "PE - Peru"
+                },
+                {
+                    "value": "PH",
+                    "description": "PH - Philippines"
+                },
+                {
+                    "value": "PL",
+                    "description": "PL - Poland"
+                },
+                {
+                    "value": "PT",
+                    "description": "PT - Portugal"
+                },
+                {
+                    "value": "PR",
+                    "description": "PR - Puerto Rico"
+                },
+                {
+                    "value": "RO",
+                    "description": "RO - Romania"
+                },
+                {
+                    "value": "SG",
+                    "description": "SG - Singapore"
+                },
+                {
+                    "value": "ZA",
+                    "description": "ZA - South Africa"
+                },
+                {
+                    "value": "SE",
+                    "description": "SE - Sweden"
+                },
+                {
+                    "value": "CH",
+                    "description": "CH - Switzerland"
+                },
+                {
+                    "value": "TW",
+                    "description": "TW - Taiwan"
+                },
+                {
+                    "value": "TH",
+                    "description": "TH - Thailand"
+                },
+                {
+                    "value": "TR",
+                    "description": "TR - Turkey"
+                },
+                {
+                    "value": "UA",
+                    "description": "UA - Ukraine"
+                },
+                {
+                    "value": "GB",
+                    "description": "GB - United Kingdom"
+                },
+                {
+                    "value": "US",
+                    "description": "US - United States"
+                },
+                {
+                    "value": "UY",
+                    "description": "UY - Uruguay"
+                },
+                {
+                    "value": "VE",
+                    "description": "VE - Venezuela"
+                }
+            ]
+        },
+        {
+            "type": "select",
+            "label": "Language",
+            "name": "language",
+            "value": "es-ES",
+            "options": [
+                {
+                    "value": "es-ES",
+                    "description": "Español (España)"
+                },
+                {
+                    "value": "es-MX",
+                    "description": "Español (Latinoamérica)"
+                },
+                {
+                    "value": "en-US",
+                    "description": "English"
+                },
+                {
+                    "value": "fr-FR",
+                    "description": "Français"
+                },
+                {
+                    "value": "de-DE",
+                    "description": "Deutsch"
+                },
+                {
+                    "value": "it-IT",
+                    "description": "Italiano"
+                },
+                {
+                    "value": "pt-PT",
+                    "description": "Português (Portugal)"
+                },
+                {
+                    "value": "pt-BR",
+                    "description": "Português (Brasil)"
+                }
+            ]
+        },
+        {
+            "type": "select",
+            "label": "Release day (the week starts on it)",
+            "name": "release_day",
+            "value": "4",
+            "options": [
+                {
+                    "value": "0",
+                    "description": "Monday"
+                },
+                {
+                    "value": "1",
+                    "description": "Tuesday"
+                },
+                {
+                    "value": "2",
+                    "description": "Wednesday"
+                },
+                {
+                    "value": "3",
+                    "description": "Thursday"
+                },
+                {
+                    "value": "4",
+                    "description": "Friday"
+                },
+                {
+                    "value": "5",
+                    "description": "Saturday"
+                },
+                {
+                    "value": "6",
+                    "description": "Sunday"
+                }
+            ]
+        },
+        {
+            "type": "select",
+            "label": "Week",
+            "name": "week",
+            "value": "current",
+            "options": [
+                {
+                    "value": "current",
+                    "description": "This week's releases (since the last release day)"
+                },
+                {
+                    "value": "next",
+                    "description": "Next week's releases (from the next release day)"
+                }
+            ]
+        },
+        {
+            "type": "number",
+            "label": "Movies to show",
+            "name": "count",
+            "value": 8
+        },
+        {
+            "type": "checkbox",
+            "label": "Show posters",
+            "name": "show_posters",
+            "value": true
+        },
+        {
+            "type": "checkbox",
+            "label": "Show synopsis",
+            "name": "show_overview",
+            "value": true
+        }
+    ],
+    "configuration_template": [
+        {
+            "type": "text",
+            "label": "TMDB API key",
+            "help": "Free: sign up at themoviedb.org, then Settings > API. Either the API key or the API Read Access Token works.",
+            "name": "api_key",
+            "value": ""
+        }
+    ],
+    "configuration": true
+}
