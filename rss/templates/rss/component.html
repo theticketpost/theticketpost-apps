@@ -1,5 +1,8 @@
 <link rel="stylesheet" href={{ url_for('rssapp_blueprint.static', filename='style.css') }}>
 <div class="rss_container">
+    {% if failed %}
+    <div>Could not read: {{ failed|join(', ') }}</div>
+    {% endif %}
     {% if message %}
     <div>{{ message }}</div>
     {% elif entries %}
@@ -11,6 +14,7 @@
     </div>
     {% endfor %}
     {% else %}
-    <div>No news in these feeds right now.</div>
+    {# data-ttp-empty: nothing to show, the service leaves the section out of the print #}
+    <div{% if not failed %} data-ttp-empty{% endif %}>No news in these feeds right now.</div>
     {% endif %}
 </div>

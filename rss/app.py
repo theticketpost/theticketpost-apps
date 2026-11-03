@@ -56,19 +56,20 @@ class App(Application):
 
 
     def fetch(self, feed):
-        """The feed's items, in the feed's order. [] if it can't be read."""
+        """The feed's items, in the feed's order. None if it can't be read."""
         try:
             response = requests.get(feed["url"], headers=HEADERS, timeout=TIMEOUT)
             response.raise_for_status()
         except requests.RequestException as e:
             error = f"HTTP {e.response.status_code}" if isinstance(e, requests.HTTPError) else type(e).__name__
             logger.error(f"RSS {feed['name']}: could not read the feed ({error})")
-            return []
+            return None
 
         # feedparser copes with RSS 0.9x-2.0, Atom and broken feeds (e.g. RTVE's)
         parsed = feedparser.parse(response.content)
         if not parsed.entries:
             logger.error(f"RSS {feed['name']}: no items (is it an RSS or Atom address?)")
+            return None
 
         items = []
         for entry in parsed.entries:
@@ -94,12 +95,16 @@ class App(Application):
 
 
     def get_entries(self, feeds, count, order, max_age):
+        """The headlines to print, and the names of the feeds that couldn't be read."""
         with ThreadPoolExecutor(max_workers=min(8, len(feeds))) as pool:
             results = list(pool.map(self.fetch, feeds))
+        failed = [feed["name"] for feed, items in zip(feeds, results) if items is None]
 
         entries = []
         seen = set()
         for items in results:
+            if items is None:
+                continue
             for item in self.pick(items, count, order, max_age):
                 # the same story often comes in several sections of a paper
                 key = item["title"].lower()
@@ -113,7 +118,7 @@ class App(Application):
 
         for entry in entries:
             entry["date"] = entry["date"].strftime("%B %-d, %Y at %-I:%M %p") if entry["date"] else ""
-        return entries
+        return entries, failed
 
 
     def parse_number(self, value, default, minimum):
@@ -136,6 +141,7 @@ class App(Application):
         feeds = self.feeds()
         message = None
         entries = []
+        failed = []
         if not feeds:
             message = "Add your RSS feeds in the app settings"
         else:
@@ -144,7 +150,7 @@ class App(Application):
             if not feeds:
                 message = f'There is no feed called "{options["feed"]}" in the app settings'
             else:
-                entries = self.get_entries(feeds, count, options["order"], max_age)
+                entries, failed = self.get_entries(feeds, count, options["order"], max_age)
 
-        return render_template('rss/component.html', entries=entries, message=message,
+        return render_template('rss/component.html', entries=entries, message=message, failed=failed,
                                show_source=bool(options["show_source"]), show_date=bool(options["show_date"]))

@@ -57,3 +57,13 @@ Apps available to use with theticketpost-server
     ]
 }
 ```
+
+## Nothing to show today
+
+When a component has nothing relevant to print (a calendar with no events, a feed with no news), put `data-ttp-empty` on an element of its HTML:
+
+```html
+<p data-ttp-empty>No upcoming events.</p>
+```
+
+The service leaves that section out of the printed ticket, and also any section tied to it in the editor ("Only if the section below/above is printed"), such as a title divider. The editor still shows it, dimmed. Don't mark errors this way: a section that failed should print, so the problem is seen.
