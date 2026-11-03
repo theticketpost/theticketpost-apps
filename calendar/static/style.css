@@ -1,4 +1,4 @@
-.google_calendar_container {
+.calendar_container {
     width: 100%;
     text-align: center;
     display: inline-block;
@@ -6,56 +6,56 @@
     font-family: Arial, sans-serif;
 }
   
-.google_calendar_date {
+.calendar_date {
   padding-bottom: 16px;
   margin-bottom: 16px;
 }
 
-.google_calendar_date:last-child {
+.calendar_date:last-child {
   padding-bottom: 0;
   margin-bottom: 0;
 }
 
-.google_calendar_date h3 {
+.calendar_date h3 {
   font-size: 1.5em;
   margin-bottom: 8px;
 }
 
-.google_calendar_list {
+.calendar_list {
   list-style-type: none;
   padding: 0;
   margin: 0;
 }
 
-.google_calendar_item {
+.calendar_item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
 }
 
-.google_calendar_item:not(:last-child) {
+.calendar_item:not(:last-child) {
   border-bottom: 1px solid #000000;
 }
 
-.google_calendar_time {
+.calendar_time {
   font-size: 1em;
   white-space: nowrap;
 }
 
-.google_calendar_title {
+.calendar_title {
   font-size: 1.1em;
   font-weight: bold;
   margin-left: 8px;
   flex-grow: 1;
 }
 
-.google_calendar_info {
+.calendar_info {
   margin-left: 8px;
   flex-grow: 1;
 }
 
-.google_calendar_location {
+.calendar_location {
   font-size: 0.9em;
   margin-top: 4px;
 }
@@ -65,26 +65,26 @@
   margin-right: 4px;
 }
 
-.google_calendar_list {
+.calendar_list {
   list-style-type: none;
   padding: 0;
   margin: 0;
 }
 
-.google_calendar_item {
+.calendar_item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
 }
 
-.google_calendar_item .google_calendar_time {
+.calendar_item .calendar_time {
   width: 100%;
   max-width: 97px;
   text-align: left;
 }
 
-.google_calendar_item.future {
+.calendar_item.future {
   border-bottom: none;
   padding: 0px 0 !important;
 }
@@ -95,24 +95,24 @@
   flex-grow: 1;
 }
 
-.google_calendar_time {
+.calendar_time {
   font-size: 1em;
   white-space: nowrap;
 }
 
-.google_calendar_title {
+.calendar_title {
   font-size: 1.1em;
   font-weight: bold;
   margin-left: 8px;
   flex-grow: 1;
 }
 
-.google_calendar_info {
+.calendar_info {
   margin-left: 8px;
   flex-grow: 1;
 }
 
-.google_calendar_location {
+.calendar_location {
   font-size: 1em;
   margin-top: 4px;
 }
@@ -121,7 +121,7 @@
   font-size: 0.8em;
   margin-right: 4px;
 }
-.google_calendar_owner {
+.calendar_owner {
   font-size: 0.9em;
   font-style: italic;
   margin-top: 2px;

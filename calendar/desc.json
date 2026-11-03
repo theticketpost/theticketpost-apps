@@ -1,7 +1,7 @@
 {
-    "name": "google-calendar",
+    "name": "calendar",
     "description": "Prints your appointments for the day from Google Calendar, or any calendar with an iCal address (Outlook, iCloud, Nextcloud...)",
-    "version": "2.2.0",
+    "version": "3.0.0",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,

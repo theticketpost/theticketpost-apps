@@ -1,6 +1,6 @@
-<link rel="stylesheet" href={{ url_for('google-calendarapp_blueprint.static', filename='style.css') }}>
+<link rel="stylesheet" href={{ url_for('calendarapp_blueprint.static', filename='style.css') }}>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
-<div class="google_calendar_container">
+<div class="calendar_container">
   {% if failed %}
   <p>Could not read: {{ failed|join(', ') }}</p>
   {% endif %}
@@ -11,24 +11,24 @@
     {% set future_events = [] %}
     {% for date, events in events_by_date|dictsort %}
       {% if date == datetime.date.today() %}
-        <div class="google_calendar_date">
-          <ul class="google_calendar_list">
+        <div class="calendar_date">
+          <ul class="calendar_list">
             {% for event in events %}
-            <li class="google_calendar_item">
-                <div class="google_calendar_time">
+            <li class="calendar_item">
+                <div class="calendar_time">
                 {% if event.all_day %}
                     All day
                 {% else %}
                     {{ event.start_time_str }} - {{ event.end_time_str }}
                 {% endif %}
                 </div>
-                <div class="google_calendar_info">
-                  <div class="google_calendar_title">{{ event.summary }}</div>
+                <div class="calendar_info">
+                  <div class="calendar_title">{{ event.summary }}</div>
                   {% if show_names %}
-                  <div class="google_calendar_owner">{{ event.calendar }}</div>
+                  <div class="calendar_owner">{{ event.calendar }}</div>
                   {% endif %}
                   {% if event.location %}
-                  <div class="google_calendar_location">
+                  <div class="calendar_location">
                     <i class="fas fa-map-marker-alt location-icon"></i>
                     {{ event.location }}
                   </div>
@@ -46,10 +46,10 @@
     {% endfor %}
     {% if future_events %}
       <h3 class="future-events-heading">Upcoming Events</h3>
-      <ul class="google_calendar_list">
+      <ul class="calendar_list">
         {% for item in future_events %}
-        <li class="google_calendar_item future">
-          <div class="google_calendar_time">
+        <li class="calendar_item future">
+          <div class="calendar_time">
             {{ item.date.strftime('%m/%d') }} - {{ item.event.summary }}{% if show_names %} ({{ item.event.calendar }}){% endif %}
           </div>
         </li>

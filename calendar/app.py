@@ -145,4 +145,4 @@ class App(Application):
             'show_names': show_names and len(calendars) > 1,
             'datetime': datetime
         }
-        return render_template('google-calendar/component.html', **context)
+        return render_template('calendar/component.html', **context)
