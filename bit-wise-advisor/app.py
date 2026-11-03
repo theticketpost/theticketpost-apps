@@ -12,11 +12,9 @@ import pandas as pd
 import numpy as np
 import time
 from datetime import datetime, timedelta
-from openai import OpenAI, OpenAIError
+import theticketpost.llm as llm
 import json
 from scipy.stats import linregress
-
-DEFAULT_MODEL = "gpt-5.6-terra"
 
 class App(Application):
 
@@ -179,10 +177,8 @@ class App(Application):
     def analyze_crypto_market(self, analysis_data, strategy, language='English', currency='usd'):
 
         # get app configuration parameters
-        response = self.get_configuration_json()
-        json_object = json.loads(response.data)
-        api_key = next((item for item in json_object if item["name"] == "openai_api_key"), None)
-        model = next((item["value"] for item in json_object if item["name"] == "model" and item["value"]), DEFAULT_MODEL)
+        provider = self.get_configuration_value("llm_provider", "openai")
+        model = self.get_configuration_value("model")
 
         description = (
             "Imagine you're an economic journalist tasked with creating a compelling story about Bitcoin's latest market dynamics, using key data indicators. "
@@ -222,19 +218,10 @@ class App(Application):
         ]
 
         try:
-            client = OpenAI(api_key=api_key["value"] if api_key else None)
-            completion = client.chat.completions.create(
-                messages = messages,
-                model = model,
-                response_format = {"type": "json_object"}
-            )
-
-            logger.info(completion)
-            data = json.loads(completion.choices[0].message.content)
-
-        except (OpenAIError, ValueError) as e:
-            logger.error(f"OpenAI API error: {e}")
-            data = {"headline": "Error", "article": ["OpenAI API error, check theticketpost-service logs"]}
+            data = llm.chat_json(provider, messages, model=model)
+        except llm.LLMError as e:
+            logger.error(f"Bit-wise advisor: {e}")
+            data = {"headline": "No article today", "article": [str(e)]}
 
         return data
 

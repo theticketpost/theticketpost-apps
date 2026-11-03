@@ -1,7 +1,7 @@
 {
     "name": "adventurehook",
     "description": "Module that generates story hooks for tabletop role-playing games in seconds, saving time for game masters and enhacing the player experience. Simply input senven categories and get an exciting and unique story hook in no time.",
-    "version": "1.1.0",
+    "version": "1.2.1",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,
@@ -559,19 +559,16 @@
     "configuration": true,
     "configuration_template": [
         {
-            "type": "text",
-            "label": "OpenAI APIKey",
-            "name": "api_key",
-            "value": ""
+            "type": "llm-provider",
+            "label": "AI provider",
+            "name": "llm_provider",
+            "value": "openai"
         },
         {
             "type": "text",
-            "label": "OpenAI model",
+            "label": "Model (empty: the provider's default)",
             "name": "model",
-            "value": "gpt-5.6-terra"
+            "value": ""
         }
-    ],
-    "requirements": [
-        "openai>=3.42,<4"
     ]
 }

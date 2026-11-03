@@ -1,3 +1,12 @@
+/* A narrow column (384 dots): left aligned text, because justifying it opens
+   wide gaps between words. Newspaper style paragraphs: indented and close
+   together, except the first one after the headline. */
+
+.bitwise {
+    text-align: left;
+}
+
+/* the headline as it always was: left aligned, with the paragraph's usual space below */
 .bitwise_headline {
     text-align: left;
     font-family: Postoni, BodoniSvtyTwoITCTT-Book, georgia, serif;
@@ -6,14 +15,14 @@
     font-weight: 700;
 }
 
-
-.bitwise_headline + .bitwise_article {
-    text-indent: 30px;
-}
-
-
 .bitwise_article {
+    margin: 0;
     line-height: 1.4;
     font-size: 1.1em;
-    text-align: justify;
+    text-align: left;
+    text-indent: 1.2em;
+}
+
+.bitwise_headline + .bitwise_article {
+    text-indent: 0;
 }

@@ -7,11 +7,9 @@ sys.path.append(current)
 from theticketpost.application import Application
 from flask import render_template, request
 from loguru import logger
-from openai import OpenAI, OpenAIError, RateLimitError
+import theticketpost.llm as llm
 import random
 import json
-
-DEFAULT_MODEL = "gpt-5.6-terra"
 
 class App(Application):
 
@@ -33,11 +31,8 @@ class App(Application):
     # Function that generates a role-playing game adventure hook from a list of categories
     def generate_hook(self, language, theme, location, objectives, threats, npcs, adventure_type):
 
-        # get app configuration parameters
-        response = self.get_configuration_json()
-        json_object = json.loads(response.data)
-        api_key = next((item for item in json_object if item["name"] == "api_key"), None)
-        model = next((item["value"] for item in json_object if item["name"] == "model" and item["value"]), DEFAULT_MODEL)
+        provider = self.get_configuration_value("llm_provider", "openai")
+        model = self.get_configuration_value("model")
 
         # Concatenate the categories into a single input text string
         input_text = f"Please generate an adventure hook without listing the given parameters. " \
@@ -49,32 +44,16 @@ class App(Application):
                     f"NPCs: {npcs}\n" \
                     f"Type of adventure: {adventure_type}"
 
+        # No 'temperature' or 'max_tokens': current reasoning models reject them, so the length is set in the prompt
+        messages = [
+            {"role": "system", "content": "You are an AI trained to generate short and concise role-playing game adventure hooks based on specific parameters. Answer with a single paragraph of at most 120 words, in plain text without markdown."},
+            {"role": "user", "content": input_text}
+        ]
         try:
-            client = OpenAI(api_key=api_key["value"] if api_key else None)
-            # Generate a role-playing game adventure hook from the input text string using the OpenAI API.
-            # No 'temperature' or 'max_tokens': current reasoning models reject them, so the length is set in the prompt
-            response = client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": "You are an AI trained to generate short and concise role-playing game adventure hooks based on specific parameters. Answer with a single paragraph of at most 120 words, in plain text without markdown."},
-                    {"role": "user", "content": input_text}
-                ]
-            )
-
-            logger.info(response)
-
-            # Extract the generated text from the API response
-            output_text = response.choices[0].message.content
-
-        except RateLimitError as e:
-            # Handle the OpenAI API rate limit error
-            logger.error(f"OpenAI API rate limit error: {e}")
-            output_text = "Sorry, I've exceeded my usage quota on the OpenAI API. Please try again later."
-
-        except OpenAIError as e:
-            # Handle other OpenAI API errors
-            logger.error(f"OpenAI API error: {e}")
-            output_text = "An error occurred on the OpenAI API. Please try again later."
+            output_text = llm.chat(provider, messages, model=model)
+        except llm.LLMError as e:
+            logger.error(f"Adventure hook: {e}")
+            output_text = f"No adventure hook today: {e}"
 
         return output_text
 

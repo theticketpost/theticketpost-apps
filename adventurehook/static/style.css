@@ -1,7 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Eagle+Lake&display=swap');
 
+/* left aligned: in a 384 dot column, and narrower still beside the drop cap,
+   justified text opens wide gaps between words */
 .adventurehook_text {
-    text-align: justify;
+    text-align: left;
     font-family: 'Eagle Lake', cursive;
 }
 
