@@ -6,52 +6,58 @@
     text-align: left;
 }
 
-/* The price, four figures in two columns, then the advice. Modest sizes, so
-   the section weighs like the rest of the ticket. Black on white only: the
-   printer has no greys. */
+/* Below the headline: the advice, the price and four figures in two columns,
+   then the article. Modest sizes, so the section weighs like the rest of the
+   ticket. Black on white only: the printer has no greys. */
+.bitwise_headline {
+    text-align: left;
+    font-family: Postoni, BodoniSvtyTwoITCTT-Book, georgia, serif;
+    line-height: 1.1;
+    font-size: 1.75em;
+    font-weight: 700;
+}
+
 .bitwise_box {
     text-align: center;
-    padding-bottom: 12px;
-    margin-bottom: 12px;
+    padding: 10px 0;
+    margin-bottom: 10px;
+    border-top: 2px solid #000;
     border-bottom: 2px solid #000;
-}
-
-.bitwise_price {
-    margin-bottom: 8px;
-    font-size: 1.5em;
-    font-weight: 700;
-    line-height: 1.1;
-}
-
-.bitwise_advice {
-    margin-top: 10px;
 }
 
 .bitwise_signal {
     display: inline-block;
-    padding: 1px 10px;
-    border: 2px solid #000;
+    padding: 2px 12px;
+    background: #000;
+    color: #fff;
     font-size: 1.1em;
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
 }
 
 .bitwise_note {
-    margin-left: 6px;
+    margin-top: 2px;
     font-size: 0.9em;
+}
+
+.bitwise_price {
+    margin: 6px 0 8px;
+    font-size: 1.4em;
+    font-weight: 700;
+    line-height: 1.1;
 }
 
 .bitwise_figures {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px 12px;
+    gap: 6px 12px;
     text-align: left;
 }
 
 .bitwise_figure {
     border-top: 1px solid #000;
-    padding-top: 4px;
+    padding-top: 3px;
 }
 
 .bitwise_label {
@@ -63,15 +69,6 @@
     font-weight: 700;
 }
 
-/* smaller than before: the box above leads now */
-.bitwise_headline {
-    text-align: left;
-    font-family: Postoni, BodoniSvtyTwoITCTT-Book, georgia, serif;
-    line-height: 1.1;
-    font-size: 1.45em;
-    font-weight: 700;
-}
-
 .bitwise_article {
     margin: 0;
     line-height: 1.4;
@@ -80,6 +77,8 @@
     text-indent: 1.2em;
 }
 
+/* the first paragraph isn't indented */
+.bitwise_box + .bitwise_article,
 .bitwise_headline + .bitwise_article {
     text-indent: 0;
 }
