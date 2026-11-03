@@ -249,7 +249,7 @@ class App(Application):
             "Imagine you're an economic journalist tasked with creating a compelling story about Bitcoin's latest market dynamics, using key data indicators. "
             "Is not allowed markdown. Your assignment is to produce a JSON output with two sections: a 'headline' and an 'article'. The 'article' should be presented as a list of paragraphs, each containing plain text (not JSON objects). "
             "The output must to have this scheme { 'headline': 'the headline', 'article': ['paragraph1', 'paragraph2', ... ], 'recommendation': 'buy' | 'hold' | 'sell' }. "
-            "'recommendation' is the advice the article concludes with, as one of those three English words. "
+            "'recommendation' is the advice the article concludes with, as one of those three English words, always in English even when the article is in another language. "
             "The headline needs to succinctly summarize Bitcoin's current market status. The article should then offer a deep dive into Bitcoin's recent market behavior. "
             "Please ensure that you divide your ideas into separate short paragraphs. This will enhance the readability of the text once it is printed. "
             "Please keep the entire article concise, aiming for a maximum of 60 words to ensure it's digestible and impactful for a wide audience. "
@@ -297,9 +297,22 @@ class App(Application):
             logger.error(f"Bit-wise advisor: {e}")
             return {"headline": "No article today", "article": [str(e)], "recommendation": None}
 
-        recommendation = str(data.get("recommendation", "")).strip().lower()
-        data["recommendation"] = recommendation if recommendation in RECOMMENDATIONS else None
+        data["recommendation"] = self.parse_recommendation(data.get("recommendation"))
         return data
+
+
+
+    def parse_recommendation(self, value):
+        """buy, hold or sell. The AI sometimes answers in the article's language
+        ("comprar"): the box's words of each language are accepted too."""
+        word = str(value or "").strip().lower().strip(".!")
+        if word in RECOMMENDATIONS:
+            return word
+        for texts in TEXTS.values():
+            for key in RECOMMENDATIONS:
+                if word == texts[key].lower():
+                    return key
+        return None
 
 
 
@@ -408,7 +421,7 @@ class App(Application):
         """The figures box below the article, formatted for the language. None
         without figures (an article cached by an older version, an AI error)."""
         figures = recommendation.get("figures")
-        if not figures or not recommendation.get("recommendation"):
+        if not figures:
             return None
         texts = TEXTS.get(language, TEXTS["english"])
         english = texts is TEXTS["english"]
@@ -426,7 +439,9 @@ class App(Application):
         price = number(figures["current_price"], 0)
         since = signal.get("since") or signal.get("announced")
         previous = signal.get("previous")
-        if previous and since == today:
+        if not recommendation.get("recommendation"):
+            note = ""
+        elif previous and since == today:
             note = texts["before"].format(texts[previous])
         elif since and since != today:
             day = date.fromisoformat(since)
@@ -435,7 +450,7 @@ class App(Application):
             note = ""
         fear_class = figures.get("fear_and_greed_class", "")
         return {
-            "signal": texts[recommendation["recommendation"]],
+            "signal": texts[recommendation["recommendation"]] if recommendation.get("recommendation") else "",
             "note": note,
             "price": f"{symbol}{price}" if english else f"{price} {symbol}",
             "rows": [

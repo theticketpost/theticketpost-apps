@@ -13,7 +13,7 @@
     {% endfor %}
     {% if box %}
     <div class="bitwise_box">
-        <div class="bitwise_signal">{{ box.signal }}</div>
+        {% if box.signal %}<div class="bitwise_signal">{{ box.signal }}</div>{% endif %}
         {% if box.note %}<div class="bitwise_note">{{ box.note }}</div>{% endif %}
         <div class="bitwise_price">{{ box.price }}</div>
         <div class="bitwise_figures">
