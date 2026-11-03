@@ -1,7 +1,7 @@
 {
     "name": "openweather",
     "description": "Shows the current temperature and forecast of your location. Powered by OpenWeather",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,
@@ -17,6 +17,18 @@
             "label": "Lon",
             "name": "lon",
             "value": "-8.3661"
+        },
+        {
+            "type": "number",
+            "label": "Forecast from (hour)",
+            "name": "hour_from",
+            "value": 8
+        },
+        {
+            "type": "number",
+            "label": "Forecast to (hour)",
+            "name": "hour_to",
+            "value": 19
         }
     ],
     "inspector": true,

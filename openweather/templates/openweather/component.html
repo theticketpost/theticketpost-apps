@@ -9,6 +9,12 @@
         </div>
     </div>
 
+    {% if weather.forecast_title %}
+    <div class="forecast_title">{{ weather.forecast_title }}</div>
+    {% endif %}
+    {% if not weather.forecast %}
+    <div class="forecast_empty">No forecast in this time range</div>
+    {% endif %}
     <div class="forecast_weather">
         {% for forecast in weather.forecast %}
         <div class="forecast_weather_item">
