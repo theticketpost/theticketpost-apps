@@ -253,7 +253,7 @@ class App(Application):
             "The headline needs to succinctly summarize Bitcoin's current market status. The article should then offer a deep dive into Bitcoin's recent market behavior. "
             "Please ensure that you divide your ideas into separate short paragraphs. This will enhance the readability of the text once it is printed. "
             "Please keep the entire article concise, aiming for a maximum of 60 words to ensure it's digestible and impactful for a wide audience. "
-            "The printed ticket shows, above your article, a box with the recommendation, the price, the 24 hour and 7 day price change, the distance to the 2-year moving average and the Fear and Greed Index. "
+            "The printed ticket shows, below your article, a box with the recommendation, the price, the 24 hour and 7 day price change, the distance to the 2-year moving average and the Fear and Greed Index. "
             "Don't repeat those figures and don't list numbers: explain in plain words what the data means together and why that is the recommendation. "
             "Mention another figure (a resistance level, the volume) only when it is key to the story."
         )
@@ -270,10 +270,8 @@ class App(Application):
             f"the pivot point is at {analysis_data['pivot_point']:.2f} {currency}, "
             f"with the first resistance (R1) is at {analysis_data['R1']:.2f} {currency}, "
             f"and the second resistance (R2) is at {analysis_data['R2']:.2f} {currency}. "
-            f"Analyzing the percentage change in daily prices over the past {analysis_data['days_price_change_24h']} days reveals a {analysis_data['trend_price_change_24h']} trend in price variations, characterized by a slope of {analysis_data['slope_price_change_24h']:.2f}, "
-            f"indicating a {'stronger' if abs(analysis_data['slope_price_change_24h']) > 0.5 else 'moderate'} trend in price movement. "
             f"Craft a {strategy} analysis strategy for investing in Bitcoin. "
-            f"Don't write the current price or the percentages (the box above shows them), and conclude with a clear recommendation on whether it is a good time to buy, sell, or hold Bitcoin positions, "
+            f"Don't write the current price or the percentages (the box below the article shows them), and conclude with a clear recommendation on whether it is a good time to buy, sell, or hold Bitcoin positions, "
             f"In case You mention any pivot or resistance points in the analysis, You'll make sure to include their values and explain what these levels typically indicate for the market. "
             f"For the long haul, here's a golden nugget: it’s usually a smart move to buy Bitcoin when its price is chillin' below the 2-year MA, kind of like snagging a bargain before the price jumps. "
             f"And when it’s partying way above the 2-year MAx5? That might be your cue to consider selling. Why? Because that's like riding the elevator to the top floor and stepping out before it heads back down. "
@@ -406,7 +404,7 @@ class App(Application):
 
 
     def box(self, recommendation, signal, language, currency, today):
-        """The figures box above the article, formatted for the language. None
+        """The figures box below the article, formatted for the language. None
         without figures (an article cached by an older version, an AI error)."""
         figures = recommendation.get("figures")
         if not figures or not recommendation.get("recommendation"):

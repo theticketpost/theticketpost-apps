@@ -6,8 +6,7 @@
     text-align: left;
 }
 
-/* Below the headline: the advice, the price and four figures in two columns,
-   then the article. Modest sizes, so the section weighs like the rest of the
+/* After the article: the advice, the price and four figures in two columns. Modest sizes, so the section weighs like the rest of the
    ticket. Black on white only: the printer has no greys. */
 .bitwise_headline {
     text-align: left;
@@ -20,7 +19,7 @@
 .bitwise_box {
     text-align: center;
     padding: 10px 0;
-    margin-bottom: 10px;
+    margin-top: 10px;
     border-top: 2px solid #000;
     border-bottom: 2px solid #000;
 }
@@ -78,7 +77,6 @@
 }
 
 /* the first paragraph isn't indented */
-.bitwise_box + .bitwise_article,
 .bitwise_headline + .bitwise_article {
     text-indent: 0;
 }

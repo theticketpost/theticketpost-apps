@@ -8,6 +8,9 @@
     </p>
     {% else %}
     <p class="bitwise_headline">{{ headline }}</p>
+    {% for paragraph in article %}
+    <p class="bitwise_article">{{ paragraph }}</p>
+    {% endfor %}
     {% if box %}
     <div class="bitwise_box">
         <div class="bitwise_signal">{{ box.signal }}</div>
@@ -23,8 +26,5 @@
         </div>
     </div>
     {% endif %}
-    {% for paragraph in article %}
-    <p class="bitwise_article">{{ paragraph }}</p>
-    {% endfor %}
     {% endif %}
 </div>
