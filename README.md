@@ -67,3 +67,11 @@ When a component has nothing relevant to print (a calendar with no events, a fee
 ```
 
 The service leaves that section out of the printed ticket, and also any section tied to it in the editor ("Only if the section below/above is printed"), such as a title divider. The editor still shows it, dimmed. Don't mark errors this way: a section that failed should print, so the problem is seen.
+
+## Telling a print from the editor
+
+The editor renders components to preview them, and the page the service prints renders them again. The print sends the header `X-TTP-Print: 1` (theticketpost-service 1.3.0 or later), so an app that remembers what it printed (bit-wise-advisor only prints when its advice changes) records it only then:
+
+```python
+printing = request.headers.get("X-TTP-Print") == "1"
+```

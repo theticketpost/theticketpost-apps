@@ -268,7 +268,7 @@ class App(Application):
     def should_print(self, signal, recommendation, today, reminder_days):
         """Whether today's ticket prints the article: when the recommendation changed,
         when the last print is reminder_days old, or again on the day it was printed
-        (the editor and the print render it more than once). Updates `signal`."""
+        (a print can be repeated). When it prints, `signal` records it."""
         if recommendation is None:
             return True
         announced = signal.get("announced")
@@ -308,16 +308,21 @@ class App(Application):
                         except (TypeError, ValueError):
                             pass
 
+        # the service sends X-TTP-Print from the page it prints; the editor's
+        # previews don't count as printed
+        printing = request.headers.get("X-TTP-Print") == "1"
+
         with self.state_lock:
-            return self.render_article(language, currency, strategy, reminder_days)
+            return self.render_article(language, currency, strategy, reminder_days, printing)
 
 
 
-    def render_article(self, language, currency, strategy, reminder_days):
+    def render_article(self, language, currency, strategy, reminder_days, printing):
         state = self.load_state()
         today = date.today().isoformat()
         # a recommendation depends on the strategy and the currency, not on the language
-        signal = state.setdefault("signals", {}).setdefault(f"{strategy}|{currency}", {})
+        signal_key = f"{strategy}|{currency}"
+        signal = state.setdefault("signals", {}).setdefault(signal_key, {})
 
         # one article a day: the editor and the print show the same one, and the
         # AI provider isn't asked again on every load
@@ -332,7 +337,11 @@ class App(Application):
             if recommendation["recommendation"]:
                 state["articles"][cache_key] = {**recommendation, "date": today}
 
-        printed = self.should_print(signal, recommendation["recommendation"], today, reminder_days)
+        if printing:
+            printed = self.should_print(signal, recommendation["recommendation"], today, reminder_days)
+        else:
+            # the editor shows what the next print would do, without recording it
+            printed = self.should_print(dict(signal), recommendation["recommendation"], today, reminder_days)
         self.save_state(state)
 
         if printed:
