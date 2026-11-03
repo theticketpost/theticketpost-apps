@@ -1,0 +1,15 @@
+<link rel="stylesheet" href={{ url_for('chess-puzzleapp_blueprint.static', filename='style.css') }}>
+<div class="chess">
+    <div class="chess_goal">{{ puzzle.goal }}</div>
+    <div class="chess_meta">
+        Rating {{ puzzle.rating }}{% if puzzle.last_move %} · last move {{ puzzle.last_move }}{% endif %}
+    </div>
+    <div class="chess_board">{{ puzzle.svg }}</div>
+    {% if show_game %}
+    <div class="chess_game">From {{ puzzle.white }} vs {{ puzzle.black }} on Lichess{% if puzzle.themes %} · {{ puzzle.themes|join(', ') }}{% endif %}</div>
+    {% endif %}
+    <img class="chess_ornament" src={{ url_for('chess-puzzleapp_blueprint.static', filename='engraving.svg') }} alt="">
+    {% if show_solution %}
+    <div class="chess_solution">Solution: {{ puzzle.solution }}</div>
+    {% endif %}
+</div>

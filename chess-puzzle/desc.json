@@ -1,0 +1,27 @@
+{
+    "name": "chess-puzzle",
+    "description": "Lichess' puzzle of the day: the board, what to find, and the solution upside down at the bottom. No API key needed",
+    "version": "1.2.0",
+    "author": "eipporko",
+    "render_component": true,
+    "refresh_component": true,
+    "inspector": true,
+    "inspector_template": [
+        {
+            "type": "checkbox",
+            "label": "Print the solution (upside down)",
+            "name": "show_solution",
+            "value": true
+        },
+        {
+            "type": "checkbox",
+            "label": "Show the game it comes from",
+            "name": "show_game",
+            "value": true
+        }
+    ],
+    "configuration": false,
+    "requirements": [
+        "chess>=1.10"
+    ]
+}

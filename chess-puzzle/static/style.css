@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&display=swap');
+
+.chess {
+    text-align: center;
+}
+
+/* headline in an old newspaper serif */
+.chess_goal {
+    font-family: 'Playfair Display', georgia, serif;
+    font-size: 1.75em;
+    font-weight: 900;
+    line-height: 1.1;
+}
+
+.chess_meta {
+    margin-top: 4px;
+    font-family: 'Playfair Display', georgia, serif;
+    font-style: italic;
+    font-size: 1em;
+}
+
+.chess_board {
+    margin-top: 8px;
+}
+
+.chess_board svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.chess_game {
+    margin-top: 6px;
+    font-size: 0.85em;
+}
+
+/* upside down, like newspaper puzzles: turn the ticket to read it */
+.chess_solution {
+    margin-top: 14px;
+    /* bottom border and padding: once turned they end up on top */
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #000000;
+    transform: rotate(180deg);
+    font-size: 0.95em;
+}
+
+.chess_ornament {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-top: 14px;
+}
