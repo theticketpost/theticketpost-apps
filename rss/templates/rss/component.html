@@ -3,6 +3,9 @@
     {% if failed %}
     <div>Could not read: {{ failed|join(', ') }}</div>
     {% endif %}
+    {% if editor_error %}
+    <div>AI editor not available ({{ editor_error }}): top headlines of each feed</div>
+    {% endif %}
     {% if message %}
     <div>{{ message }}</div>
     {% elif entries %}

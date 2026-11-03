@@ -58,6 +58,14 @@ Apps available to use with theticketpost-server
 }
 ```
 
+## Long texts in the inspector
+
+An inspector field of type `textarea` is a multi-line text box (theticketpost-service 1.4.0 or later), with an optional `help` line and `placeholder`:
+
+```json
+{ "type": "textarea", "label": "AI editor: editorial line", "name": "editorial", "value": "", "help": "What matters to you", "placeholder": "Local news first..." }
+```
+
 ## Nothing to show today
 
 When a component has nothing relevant to print (a calendar with no events, a feed with no news), put `data-ttp-empty` on an element of its HTML:

@@ -1,7 +1,7 @@
 {
     "name": "rss",
-    "description": "Headlines from any newspaper or blog with an RSS or Atom feed. No API key needed",
-    "version": "1.1.0",
+    "description": "Headlines from any newspaper or blog with an RSS or Atom feed, optionally picked by an AI editor following your editorial line. No API key needed",
+    "version": "1.2.0",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,
@@ -21,7 +21,7 @@
         },
         {
             "type": "number",
-            "label": "Headlines per feed",
+            "label": "Headlines per feed (with the AI editor: news read from each feed for it to choose from)",
             "name": "count",
             "value": 5
         },
@@ -38,8 +38,26 @@
                 {
                     "value": "newest",
                     "description": "Newest first"
+                },
+                {
+                    "value": "editor",
+                    "description": "Chosen by the AI editor: the most important ones, without repeating stories"
                 }
             ]
+        },
+        {
+            "type": "number",
+            "label": "AI editor: headlines on the front page",
+            "name": "front_page",
+            "value": 6
+        },
+        {
+            "type": "textarea",
+            "label": "AI editor: editorial line",
+            "name": "editorial",
+            "value": "",
+            "help": "What matters to you and what doesn't. Empty: a general interest newspaper.",
+            "placeholder": "Local news from A Coruña and Galicia first, then Spain, and only the most relevant from the world. What affects daily life (services, traffic, weather, economy) over political statements. Leave out minor crimes, celebrities and sports results unless they are exceptional."
         },
         {
             "type": "number",
@@ -69,6 +87,18 @@
             "name": "feeds",
             "value": [],
             "required": true
+        },
+        {
+            "type": "llm-provider",
+            "label": "AI provider (for the AI editor)",
+            "name": "llm_provider",
+            "value": "openai"
+        },
+        {
+            "type": "text",
+            "label": "Model (empty: the provider's default)",
+            "name": "model",
+            "value": ""
         }
     ],
     "requirements": [
