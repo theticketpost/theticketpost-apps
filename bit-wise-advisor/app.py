@@ -266,7 +266,7 @@ class App(Application):
             f"the price changed {analysis_data['change_24h_percent']:.2f}% in 24 hours and {analysis_data['change_7d_percent']:.2f}% in 7 days, "
             f"yesterday's trading volume was {analysis_data['diff_volume_percent_last_30_days']:.2f}% away from the 30-day average, "
             f"and {analysis_data['diff_volume_percent_last_24_h']:.2f}% away from the day before, "
-            f"and the Fear and Greed Index is at {analysis_data.get('fear_and_greed_index', 'not provided')}. "
+            f"and the Fear and Greed Index is at {analysis_data.get('fear_and_greed_index', 'not provided')} ({analysis_data.get('fear_and_greed_class') or 'no class given'}: use that name for it). "
             f"the pivot point is at {analysis_data['pivot_point']:.2f} {currency}, "
             f"with the first resistance (R1) is at {analysis_data['R1']:.2f} {currency}, "
             f"and the second resistance (R2) is at {analysis_data['R2']:.2f} {currency}. "

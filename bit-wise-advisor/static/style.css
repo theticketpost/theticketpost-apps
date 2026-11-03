@@ -6,8 +6,9 @@
     text-align: left;
 }
 
-/* The figures first: the advice in a black box, the price, then four figures
-   in two columns. Black on white only: the printer has no greys. */
+/* The price, four figures in two columns, then the advice. Modest sizes, so
+   the section weighs like the rest of the ticket. Black on white only: the
+   printer has no greys. */
 .bitwise_box {
     text-align: center;
     padding-bottom: 12px;
@@ -15,27 +16,30 @@
     border-bottom: 2px solid #000;
 }
 
+.bitwise_price {
+    margin-bottom: 8px;
+    font-size: 1.5em;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.bitwise_advice {
+    margin-top: 10px;
+}
+
 .bitwise_signal {
     display: inline-block;
-    padding: 4px 22px;
-    background: #000;
-    color: #fff;
-    font-size: 2em;
-    font-weight: 800;
-    letter-spacing: 0.06em;
+    padding: 1px 10px;
+    border: 2px solid #000;
+    font-size: 1.1em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
 }
 
 .bitwise_note {
-    margin-top: 4px;
-    font-size: 0.95em;
-}
-
-.bitwise_price {
-    margin: 8px 0 10px;
-    font-size: 2.1em;
-    font-weight: 800;
-    line-height: 1;
+    margin-left: 6px;
+    font-size: 0.9em;
 }
 
 .bitwise_figures {
@@ -55,7 +59,7 @@
 }
 
 .bitwise_value {
-    font-size: 1.25em;
+    font-size: 1.1em;
     font-weight: 700;
 }
 

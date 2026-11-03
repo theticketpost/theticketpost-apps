@@ -9,8 +9,6 @@
     {% else %}
     {% if box %}
     <div class="bitwise_box">
-        <div class="bitwise_signal">{{ box.signal }}</div>
-        {% if box.note %}<div class="bitwise_note">{{ box.note }}</div>{% endif %}
         <div class="bitwise_price">{{ box.price }}</div>
         <div class="bitwise_figures">
             {% for label, value in box.rows %}
@@ -19,6 +17,10 @@
                 <div class="bitwise_value">{{ value }}</div>
             </div>
             {% endfor %}
+        </div>
+        <div class="bitwise_advice">
+            <span class="bitwise_signal">{{ box.signal }}</span>
+            {% if box.note %}<span class="bitwise_note">{{ box.note }}</span>{% endif %}
         </div>
     </div>
     {% endif %}
