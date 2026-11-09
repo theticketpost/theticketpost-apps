@@ -1,0 +1,70 @@
+{
+    "name": "coloring",
+    "description": "A coloring page drawn by AI from your idea, in clean black lines ready to print. Needs Google Gemini, OpenAI or OpenRouter, the providers that draw images",
+    "version": "1.0.0",
+    "author": "eipporko",
+    "render_component": true,
+    "refresh_component": true,
+    "inspector": true,
+    "inspector_template": [
+        {
+            "type": "textarea",
+            "label": "What to draw",
+            "name": "prompt",
+            "value": "",
+            "help": "In any language. Empty: a surprise drawing",
+            "placeholder": "A dragon reading a book in a castle library"
+        },
+        {
+            "type": "select",
+            "label": "Detail",
+            "name": "detail",
+            "value": "simple",
+            "options": [
+                {
+                    "value": "simple",
+                    "description": "Simple (young children)"
+                },
+                {
+                    "value": "medium",
+                    "description": "Medium"
+                },
+                {
+                    "value": "detailed",
+                    "description": "Detailed (adults)"
+                }
+            ]
+        },
+        {
+            "type": "select",
+            "label": "New drawing",
+            "name": "frequency",
+            "value": "daily",
+            "options": [
+                {
+                    "value": "daily",
+                    "description": "Every day"
+                },
+                {
+                    "value": "fixed",
+                    "description": "Only when the idea changes"
+                }
+            ]
+        }
+    ],
+    "configuration": true,
+    "configuration_template": [
+        {
+            "type": "llm-provider",
+            "label": "AI provider (Google Gemini, OpenAI or OpenRouter)",
+            "name": "llm_provider",
+            "value": "gemini"
+        },
+        {
+            "type": "text",
+            "label": "Image model (empty: the provider's default)",
+            "name": "model",
+            "value": ""
+        }
+    ]
+}

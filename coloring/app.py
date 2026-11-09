@@ -1,0 +1,279 @@
+import base64
+import hashlib
+import io
+import json
+import os
+import random
+import threading
+from datetime import date, timedelta
+
+import requests
+from flask import render_template, request
+from loguru import logger
+from PIL import Image, ImageFilter
+
+import theticketpost.llm as llm
+import theticketpost.settings
+from theticketpost.application import Application
+
+
+# Providers that can draw, and the model used when the app's setting is empty
+IMAGE_MODELS = {
+    "gemini": "gemini-2.5-flash-image",
+    "openai": "gpt-image-1-mini",
+    "openrouter": "google/gemini-2.5-flash-image",
+}
+TIMEOUT = 180
+
+DETAIL = {
+    "simple": "for young children: a few big simple shapes, very thick outlines, "
+              "large areas to color, no background or a very simple one",
+    "medium": "for children: clear shapes, thick outlines, a simple background",
+    "detailed": "for adults: rich details and patterns, a full background, "
+                "fine but solid outlines",
+}
+
+# what to draw when the idea is left empty: one per day
+SURPRISES = [
+    "a friendly dragon reading a book",
+    "a cat astronaut floating in space",
+    "an underwater castle with fish and seahorses",
+    "a treehouse in a big oak tree",
+    "a dinosaur having a picnic",
+    "a hot air balloon over the mountains",
+    "a robot watering flowers in a garden",
+    "an owl family on a branch under the moon",
+    "a pirate ship on the waves",
+    "a unicorn in a meadow of flowers",
+    "a busy farm with a tractor and animals",
+    "a lighthouse by the sea with seagulls",
+    "a fox in an autumn forest with mushrooms",
+    "a train crossing a bridge",
+    "a turtle surfing a wave",
+    "a bakery shop full of cakes",
+    "a knight and a castle",
+    "a penguin building a snowman",
+    "a jungle with a monkey, a parrot and a toucan",
+    "a mandala of flowers and leaves",
+]
+
+# drawings no section has asked for in this many days are deleted
+KEEP_DAYS = 14
+FILE_PREFIX = "coloring-"
+
+
+class App(Application):
+
+    def __init__(self, desc, flaskApp):
+        Application.__init__(self, __name__, __file__, desc, flaskApp)
+        # Kept next to the app's config.json: store updates don't overwrite it
+        self.state_path = os.path.join(self.root_path, "state.json")
+        self.files_folder = os.path.join(self.static_folder, "files")
+        # the editor and the print can ask for the same drawing at once: draw it once
+        self.lock = threading.Lock()
+
+
+    def load_state(self):
+        try:
+            with open(self.state_path) as f:
+                state = json.load(f)
+            return state if isinstance(state, dict) else {}
+        except (OSError, ValueError):
+            return {}
+
+
+    def save_state(self, state):
+        try:
+            with open(self.state_path, "w") as f:
+                json.dump(state, f, indent=2)
+        except OSError as e:
+            logger.error(f"Coloring: could not save its state: {e}")
+
+
+    def render_component(self):
+        idea, detail, frequency = "", "simple", "daily"
+        if request.headers.get('Content-Type') == 'application/json':
+            for element in request.json:
+                value = element.get("value")
+                if element.get("name") == "prompt":
+                    idea = (value or "").strip()
+                elif element.get("name") == "detail" and value in DETAIL:
+                    detail = value
+                elif element.get("name") == "frequency" and value in ("daily", "fixed"):
+                    frequency = value
+
+        provider = self.get_configuration_value("llm_provider", "gemini")
+        model = self.get_configuration_value("model") or IMAGE_MODELS.get(provider)
+        today = date.today().isoformat()
+        subject = idea or random.Random(today).choice(SURPRISES)
+
+        with self.lock:
+            try:
+                name = self.drawing(provider, model, subject, detail, frequency, today)
+            except llm.LLMError as e:
+                logger.error(f"Coloring: {e}")
+                return render_template('coloring/component.html', error=f"No coloring page today: {e}")
+
+        return render_template('coloring/component.html', image_url=self.static_url('files/' + name), subject=subject)
+
+
+    def drawing(self, provider, model, subject, detail, frequency, today):
+        """The file name of the drawing for these settings: today's (or, with
+        "fixed", the last one) when there is one, else a new one."""
+        state = self.load_state()
+        drawings = state.setdefault("drawings", {})
+        key = hashlib.sha1(f"{provider}|{model}|{subject}|{detail}".encode()).hexdigest()[:16]
+        entry = drawings.get(key)
+        exists = entry and os.path.exists(os.path.join(self.files_folder, entry["file"]))
+        if exists and (frequency == "fixed" or entry["date"] == today):
+            entry["used"] = today
+        else:
+            logger.info(f"Coloring: drawing '{subject}' with {provider} ({model})")
+            png = self.to_line_art(self.generate(provider, model, self.prompt(subject, detail)))
+            os.makedirs(self.files_folder, exist_ok=True)
+            name = f"{FILE_PREFIX}{key}-{today}.png"
+            with open(os.path.join(self.files_folder, name), "wb") as f:
+                f.write(png)
+            entry = {"file": name, "date": today, "used": today}
+            drawings[key] = entry
+        self.clean_up(drawings, today)
+        self.save_state(state)
+        return entry["file"]
+
+
+    def clean_up(self, drawings, today):
+        oldest = (date.fromisoformat(today) - timedelta(days=KEEP_DAYS)).isoformat()
+        for key in [k for k, v in drawings.items() if v.get("used", "") < oldest]:
+            del drawings[key]
+        keep = {v["file"] for v in drawings.values()}
+        try:
+            for name in os.listdir(self.files_folder):
+                if name.startswith(FILE_PREFIX) and name not in keep:
+                    os.remove(os.path.join(self.files_folder, name))
+        except OSError:
+            pass
+
+
+    def prompt(self, subject, detail):
+        return (f"A coloring book page of: {subject}. "
+                f"Black line art on a pure white background, {DETAIL[detail]}. "
+                "Only black outlines: no color, no gray, no shading, no hatching, "
+                "no large filled black areas, no text, no border or frame. "
+                "The whole drawing fits inside the page, portrait orientation.")
+
+
+    # --- image generation -------------------------------------------------
+
+    def generate(self, provider, model, prompt):
+        """PNG/JPEG bytes from the provider. Raises llm.LLMError."""
+        if provider not in IMAGE_MODELS:
+            name = llm.PROVIDERS.get(provider, {}).get("name", provider)
+            raise llm.LLMError(f"{name} can't draw images: choose Google Gemini, OpenAI or OpenRouter in the app's settings")
+        if not llm.is_configured(provider):
+            raise llm.LLMError(f"{llm.PROVIDERS[provider]['name']} is not set up: add it in Settings > AI providers")
+        config = llm.provider_settings(provider)
+        base_url = (config.get("base_url") or llm.PROVIDERS[provider]["base_url"]).rstrip("/")
+        key = config.get("api_key", "")
+        if provider == "gemini":
+            return self.generate_gemini(base_url, key, model, prompt)
+        if provider == "openai":
+            return self.generate_openai(base_url, key, model, prompt)
+        return self.generate_openrouter(base_url, key, model, prompt)
+
+
+    def post(self, provider, url, body, headers):
+        name = llm.PROVIDERS[provider]["name"]
+        try:
+            response = requests.post(url, json=body, headers=headers, timeout=TIMEOUT)
+        except requests.RequestException as e:
+            raise llm.LLMError(f"Could not reach {name}: {type(e).__name__}") from e
+        if response.status_code != 200:
+            raise llm.LLMError(f"{name} error {response.status_code}: {llm.error_message(response)}")
+        try:
+            return response.json()
+        except ValueError as e:
+            raise llm.LLMError(f"Unexpected answer from {name}") from e
+
+
+    def generate_gemini(self, base_url, key, model, prompt):
+        # images come from the native API, not the OpenAI compatible one the chats use
+        if base_url.endswith("/openai"):
+            base_url = base_url[:-len("/openai")]
+        data = self.post("gemini", f"{base_url}/models/{model}:generateContent",
+                         {"contents": [{"parts": [{"text": prompt}]}],
+                          "generationConfig": {"responseModalities": ["IMAGE"],
+                                               "imageConfig": {"aspectRatio": "3:4"}}},
+                         {"Content-Type": "application/json", "x-goog-api-key": key})
+        texts = []
+        for candidate in data.get("candidates") or []:
+            for part in (candidate.get("content") or {}).get("parts") or []:
+                inline = part.get("inlineData") or part.get("inline_data")
+                if inline and inline.get("data"):
+                    return base64.b64decode(inline["data"])
+                if part.get("text"):
+                    texts.append(part["text"])
+            if candidate.get("finishReason") not in (None, "STOP"):
+                texts.append(candidate["finishReason"])
+        block = (data.get("promptFeedback") or {}).get("blockReason")
+        reason = block or " ".join(texts)[:200] or "no image in the answer"
+        raise llm.LLMError(f"Google Gemini didn't draw it: {reason}")
+
+
+    def generate_openai(self, base_url, key, model, prompt):
+        data = self.post("openai", f"{base_url}/images/generations",
+                         {"model": model, "prompt": prompt, "size": "1024x1536", "quality": "medium", "n": 1},
+                         {"Content-Type": "application/json", "Authorization": "Bearer " + key})
+        try:
+            return base64.b64decode(data["data"][0]["b64_json"])
+        except (KeyError, IndexError, TypeError, ValueError) as e:
+            raise llm.LLMError("OpenAI didn't draw it: no image in the answer") from e
+
+
+    def generate_openrouter(self, base_url, key, model, prompt):
+        data = self.post("openrouter", f"{base_url}/chat/completions",
+                         {"model": model, "messages": [{"role": "user", "content": prompt}],
+                          "modalities": ["image", "text"], "image_config": {"aspect_ratio": "3:4"}},
+                         {"Content-Type": "application/json", "Authorization": "Bearer " + key})
+        try:
+            url = data["choices"][0]["message"]["images"][0]["image_url"]["url"]
+            return base64.b64decode(url.split(",", 1)[1])
+        except (KeyError, IndexError, TypeError, ValueError) as e:
+            raise llm.LLMError(f"OpenRouter didn't draw it: is {model} an image model?") from e
+
+
+    # --- printing ----------------------------------------------------------
+
+    def to_line_art(self, data):
+        """The drawing as a 1-bit PNG exactly as wide as the ticket, so the
+        browser doesn't scale it and the lines print sharp and black."""
+        try:
+            img = Image.open(io.BytesIO(data))
+            img.load()
+        except Exception as e:
+            raise llm.LLMError("The drawing isn't a valid image") from e
+        if img.mode in ("RGBA", "LA", "P"):
+            # a transparent background is white on paper
+            img = img.convert("RGBA")
+            background = Image.new("RGBA", img.size, "white")
+            img = Image.alpha_composite(background, img)
+        img = img.convert("L")
+
+        # use the whole width of the paper: crop the white margins
+        bbox = img.point(lambda v: 255 if v < 160 else 0).getbbox()
+        if bbox:
+            pad = max(4, img.width // 50)
+            img = img.crop((max(0, bbox[0] - pad), max(0, bbox[1] - pad),
+                            min(img.width, bbox[2] + pad), min(img.height, bbox[3] + pad)))
+
+        device = theticketpost.settings.get_json("config").get("printer", {}).get("device") or {}
+        width = int(device.get("dots_per_line", 384))
+        scale = img.width / width
+        if scale >= 2:
+            # thicken the lines first, or thin ones break up when scaled down
+            img = img.filter(ImageFilter.MinFilter(3 if scale < 4 else 5))
+        img = img.resize((width, max(1, round(img.height / scale))), Image.LANCZOS)
+        img = img.point(lambda v: 255 if v > 190 else 0).convert("1", dither=Image.Dither.NONE)
+
+        out = io.BytesIO()
+        img.save(out, "PNG")
+        return out.getvalue()

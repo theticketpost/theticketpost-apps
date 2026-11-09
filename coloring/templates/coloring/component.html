@@ -1,0 +1,5 @@
+{% if image_url %}
+<img src="{{ image_url }}" alt="{{ subject }}" style="display: block; width: 100%; height: auto; image-rendering: pixelated;">
+{% else %}
+<p style="margin: 0; text-align: center;">{{ error }}</p>
+{% endif %}
