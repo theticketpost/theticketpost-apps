@@ -259,7 +259,7 @@ class App(Application):
         img = img.convert("L")
 
         # use the whole width of the paper: crop the white margins
-        bbox = img.point(lambda v: 255 if v < 160 else 0).getbbox()
+        bbox = self.content_bbox(img)
         if bbox:
             pad = max(4, img.width // 50)
             img = img.crop((max(0, bbox[0] - pad), max(0, bbox[1] - pad),
@@ -277,3 +277,45 @@ class App(Application):
         out = io.BytesIO()
         img.save(out, "PNG")
         return out.getvalue()
+
+
+    def content_bbox(self, img):
+        """Box around the drawing, leaving out specks: a stray dot the model
+        left near the edge would otherwise keep a wide white margin."""
+        # scan a coarse grid (cells of `cell` px): fast enough in pure Python
+        cell = max(1, min(img.size) // 256)
+        dark = img.point(lambda v: 255 if v < 160 else 0)
+        small = dark.reduce(cell) if cell > 1 else dark
+        w, h = small.size
+        pixels = small.load()
+        seen = bytearray(w * h)
+        # keep marks of at least ~1/40 of the width across (a bubble, a star)
+        min_size = max(2, w // 40)
+        box = None
+        for start in range(w * h):
+            if seen[start] or not pixels[start % w, start // w]:
+                continue
+            # flood fill one mark, 8-connected
+            seen[start] = 1
+            stack = [start]
+            x0, y0, x1, y1 = w, h, 0, 0
+            while stack:
+                i = stack.pop()
+                x, y = i % w, i // w
+                x0, y0, x1, y1 = min(x0, x), min(y0, y), max(x1, x), max(y1, y)
+                for ny in (y - 1, y, y + 1):
+                    if 0 <= ny < h:
+                        for nx in (x - 1, x, x + 1):
+                            if 0 <= nx < w:
+                                j = ny * w + nx
+                                if not seen[j] and pixels[nx, ny]:
+                                    seen[j] = 1
+                                    stack.append(j)
+            if max(x1 - x0, y1 - y0) + 1 < min_size:
+                continue
+            box = (x0, y0, x1, y1) if box is None else \
+                (min(box[0], x0), min(box[1], y0), max(box[2], x1), max(box[3], y1))
+        if box is None:
+            return dark.getbbox()
+        return (box[0] * cell, box[1] * cell,
+                min(img.width, (box[2] + 1) * cell), min(img.height, (box[3] + 1) * cell))
