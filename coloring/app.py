@@ -138,15 +138,15 @@ class App(Application):
         if exists and (frequency == "fixed" or entry["date"] == today):
             entry["used"] = today
         else:
-            logger.info(f"Coloring: drawing '{subject}' with {provider} ({model})")
             remember = self.remember()
             recent = history[-remember:] if remember else []
-            image, described = self.generate(provider, model, self.prompt(subject, detail, recent))
+            described = self.plan_scene(provider, subject, recent)
+            logger.info(f"Coloring: drawing '{described}' with {provider} ({model})")
+            image = self.generate(provider, model, self.prompt(subject, described, detail))
             png = self.to_line_art(image)
-            described = self.first_line(described) or subject
-            logger.info(f"Coloring: drew {described}")
-            history.append(described)
-            del history[:-max(remember, 1)]
+            if described != subject:  # a chosen scene, not the idea as is
+                history.append(described)
+                del history[:-max(remember, 1)]
             os.makedirs(self.files_folder, exist_ok=True)
             name = f"{FILE_PREFIX}{key}-{today}.png"
             with open(os.path.join(self.files_folder, name), "wb") as f:
@@ -178,43 +178,67 @@ class App(Application):
             return DEFAULT_REMEMBER
 
 
-    def prompt(self, subject, detail, recent):
-        prompt = (f"A coloring book page of: {subject}. "
+    def plan_scene(self, provider, idea, recent):
+        """The concrete scene to draw, chosen by the provider's text model.
+
+        Image models don't follow "don't draw these": a list of recent owlbears
+        made them draw more owlbears. A text model picks a scene that differs
+        from the recent ones, and the image model only gets that scene.
+        Falls back to the idea itself if the text model fails."""
+        lines = [f"The idea: {idea}"]
+        if recent:
+            lines.append("Pages already drawn lately. Choose a different main character "
+                         "AND a different activity than every one of these:")
+            lines += [f"- {item}" for item in recent]
+        # models asked to pick "randomly" pick the same thing every time
+        lines.append(f"Random number to make any open choice with: {random.randint(1000, 9999)}. "
+                     "Avoid the most obvious option.")
+        messages = [
+            {"role": "system", "content":
+                "You choose the scene for a coloring book page. Answer with one "
+                "line only, in English, at most 25 words: the character, what it is doing "
+                "and where. No preamble, no quotes."},
+            {"role": "user", "content": "\n".join(lines)},
+        ]
+        try:
+            scene = self.first_line(llm.chat(provider, messages))
+        except llm.LLMError as e:
+            logger.warning(f"Coloring: couldn't choose a scene, drawing the idea as is: {e}")
+            scene = ""
+        return scene or idea[:200]
+
+
+    def prompt(self, idea, scene, detail):
+        prompt = (f"A coloring book page of: {scene}. "
                   f"Black line art on a pure white background, {DETAIL[detail]}. "
                   "Only black outlines: no color, no gray, no shading, no hatching, "
                   "no large filled black areas, no text, no border or frame. "
                   "The whole drawing fits inside the page, portrait orientation.")
-        if recent:
-            prompt += ("\n\nRecent pages, don't repeat them: choose a clearly different "
-                       "character, activity and scene than all of these:\n"
-                       + "\n".join(f"- {item}" for item in recent))
-        # models asked to pick "randomly" pick the same thing every time
-        prompt += (f"\n\nWhen the idea leaves a choice open, use this random number to make it: "
-                   f"{random.randint(1000, 9999)}. Avoid the most obvious option.")
-        prompt += ("\n\nAlong with the image, write exactly one line in English that starts "
-                   "with \"Drawn:\" and says in at most 20 words what you drew: the character "
-                   "and what it is doing. For example: \"Drawn: a goblin knitting a scarf by the fire\".")
+        if scene != idea:
+            # the request it comes from may say how it should look
+            prompt += ("\n\nDraw exactly that scene. The request it was chosen from, "
+                       f"for the style only: {idea}")
         return prompt
 
 
     @staticmethod
     def first_line(text):
-        """The description the model wrote: its "Drawn:" line. Without one, all
-        it wrote (models add things like "Here is your coloring page!")."""
-        lines = [line.strip().strip("*#-\"' ").strip() for line in (text or "").splitlines()]
-        lines = [line for line in lines if line]
-        for line in lines:
-            label, _, rest = line.partition(":")
-            if label.strip("*_ ").lower() == "drawn" and rest.strip(" *_\"'"):
-                return rest.strip(" *_\"'")[:200]
-        return " ".join(lines)[:200]
+        """The first line the model wrote, without markdown, quotes or a
+        "Scene:" style label."""
+        for line in (text or "").splitlines():
+            line = line.strip().strip("*#-\"' ").strip()
+            label, sep, rest = line.partition(":")
+            if sep and len(label.split()) <= 2 and rest.strip():
+                line = rest.strip(" *_\"'")
+            if line:
+                return line[:200]
+        return ""
 
 
     # --- image generation -------------------------------------------------
 
     def generate(self, provider, model, prompt):
-        """(PNG/JPEG bytes, what the model says it drew or "") from the provider.
-        Raises llm.LLMError."""
+        """PNG/JPEG bytes from the provider. Raises llm.LLMError."""
         if provider not in IMAGE_MODELS:
             name = llm.PROVIDERS.get(provider, {}).get("name", provider)
             raise llm.LLMError(f"{name} can't draw images: choose Google Gemini, OpenAI or OpenRouter in the app's settings")
@@ -250,7 +274,7 @@ class App(Application):
             base_url = base_url[:-len("/openai")]
         data = self.post("gemini", f"{base_url}/models/{model}:generateContent",
                          {"contents": [{"parts": [{"text": prompt}]}],
-                          "generationConfig": {"responseModalities": ["TEXT", "IMAGE"],
+                          "generationConfig": {"responseModalities": ["IMAGE"],
                                                "imageConfig": {"aspectRatio": "3:4"}}},
                          {"Content-Type": "application/json", "x-goog-api-key": key})
         texts = []
@@ -263,7 +287,7 @@ class App(Application):
                 elif part.get("text") and not part.get("thought"):
                     texts.append(part["text"])
             if image is not None:
-                return image, "\n".join(texts)
+                return image
             if candidate.get("finishReason") not in (None, "STOP"):
                 texts.append(candidate["finishReason"])
         block = (data.get("promptFeedback") or {}).get("blockReason")
@@ -276,9 +300,7 @@ class App(Application):
                          {"model": model, "prompt": prompt, "size": "1024x1536", "quality": "medium", "n": 1},
                          {"Content-Type": "application/json", "Authorization": "Bearer " + key})
         try:
-            image = data["data"][0]
-            # gpt-image models don't say what they drew; older ones give revised_prompt
-            return base64.b64decode(image["b64_json"]), image.get("revised_prompt") or ""
+            return base64.b64decode(data["data"][0]["b64_json"])
         except (KeyError, IndexError, TypeError, ValueError) as e:
             raise llm.LLMError("OpenAI didn't draw it: no image in the answer") from e
 
@@ -289,10 +311,8 @@ class App(Application):
                           "modalities": ["image", "text"], "image_config": {"aspect_ratio": "3:4"}},
                          {"Content-Type": "application/json", "Authorization": "Bearer " + key})
         try:
-            message = data["choices"][0]["message"]
-            url = message["images"][0]["image_url"]["url"]
-            text = message.get("content") if isinstance(message.get("content"), str) else ""
-            return base64.b64decode(url.split(",", 1)[1]), text
+            url = data["choices"][0]["message"]["images"][0]["image_url"]["url"]
+            return base64.b64decode(url.split(",", 1)[1])
         except (KeyError, IndexError, TypeError, ValueError) as e:
             raise llm.LLMError(f"OpenRouter didn't draw it: is {model} an image model?") from e
 
