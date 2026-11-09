@@ -59,7 +59,7 @@ SURPRISES = [
 
 # drawings no section has asked for in this many days are deleted
 KEEP_DAYS = 14
-# how many recent drawings of an idea the model is told not to repeat
+# how many recent drawings the model is told not to repeat
 DEFAULT_REMEMBER = 10
 FILE_PREFIX = "coloring-"
 
@@ -124,8 +124,14 @@ class App(Application):
         "fixed", the last one) when there is one, else a new one."""
         state = self.load_state()
         drawings = state.setdefault("drawings", {})
-        # what was drawn lately for this idea (all the surprises share one list)
-        history = state.setdefault("history", {}).setdefault(idea or "(surprise)", [])
+        # what was drawn lately, whatever the idea: retouching the idea to get a
+        # new page must not forget what came before
+        history = state.get("history")
+        if isinstance(history, dict):  # 1.1.x kept one list per idea
+            history = [item for items in history.values() for item in items]
+        if not isinstance(history, list):
+            history = []
+        state["history"] = history
         key = hashlib.sha1(f"{provider}|{model}|{subject}|{detail}".encode()).hexdigest()[:16]
         entry = drawings.get(key)
         exists = entry and os.path.exists(os.path.join(self.files_folder, entry["file"]))
@@ -179,9 +185,12 @@ class App(Application):
                   "no large filled black areas, no text, no border or frame. "
                   "The whole drawing fits inside the page, portrait orientation.")
         if recent:
-            prompt += ("\n\nRecent pages for this idea, don't repeat them: choose a clearly "
-                       "different character, activity and scene than all of these:\n"
+            prompt += ("\n\nRecent pages, don't repeat them: choose a clearly different "
+                       "character, activity and scene than all of these:\n"
                        + "\n".join(f"- {item}" for item in recent))
+        # models asked to pick "randomly" pick the same thing every time
+        prompt += (f"\n\nWhen the idea leaves a choice open, use this random number to make it: "
+                   f"{random.randint(1000, 9999)}. Avoid the most obvious option.")
         prompt += ("\n\nAlong with the image, write exactly one line in English that starts "
                    "with \"Drawn:\" and says in at most 20 words what you drew: the character "
                    "and what it is doing. For example: \"Drawn: a goblin knitting a scarf by the fire\".")
