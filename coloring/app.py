@@ -59,6 +59,8 @@ SURPRISES = [
 
 # drawings no section has asked for in this many days are deleted
 KEEP_DAYS = 14
+# how many recent drawings of an idea the model is told not to repeat
+DEFAULT_REMEMBER = 10
 FILE_PREFIX = "coloring-"
 
 
@@ -109,7 +111,7 @@ class App(Application):
 
         with self.lock:
             try:
-                name = self.drawing(provider, model, subject, detail, frequency, today)
+                name = self.drawing(provider, model, idea, subject, detail, frequency, today)
             except llm.LLMError as e:
                 logger.error(f"Coloring: {e}")
                 return render_template('coloring/component.html', error=f"No coloring page today: {e}")
@@ -117,11 +119,13 @@ class App(Application):
         return render_template('coloring/component.html', image_url=self.static_url('files/' + name), subject=subject)
 
 
-    def drawing(self, provider, model, subject, detail, frequency, today):
+    def drawing(self, provider, model, idea, subject, detail, frequency, today):
         """The file name of the drawing for these settings: today's (or, with
         "fixed", the last one) when there is one, else a new one."""
         state = self.load_state()
         drawings = state.setdefault("drawings", {})
+        # what was drawn lately for this idea (all the surprises share one list)
+        history = state.setdefault("history", {}).setdefault(idea or "(surprise)", [])
         key = hashlib.sha1(f"{provider}|{model}|{subject}|{detail}".encode()).hexdigest()[:16]
         entry = drawings.get(key)
         exists = entry and os.path.exists(os.path.join(self.files_folder, entry["file"]))
@@ -129,12 +133,19 @@ class App(Application):
             entry["used"] = today
         else:
             logger.info(f"Coloring: drawing '{subject}' with {provider} ({model})")
-            png = self.to_line_art(self.generate(provider, model, self.prompt(subject, detail)))
+            remember = self.remember()
+            recent = history[-remember:] if remember else []
+            image, described = self.generate(provider, model, self.prompt(subject, detail, recent))
+            png = self.to_line_art(image)
+            described = self.first_line(described) or subject
+            logger.info(f"Coloring: drew {described}")
+            history.append(described)
+            del history[:-max(remember, 1)]
             os.makedirs(self.files_folder, exist_ok=True)
             name = f"{FILE_PREFIX}{key}-{today}.png"
             with open(os.path.join(self.files_folder, name), "wb") as f:
                 f.write(png)
-            entry = {"file": name, "date": today, "used": today}
+            entry = {"file": name, "date": today, "used": today, "drawn": described}
             drawings[key] = entry
         self.clean_up(drawings, today)
         self.save_state(state)
@@ -154,18 +165,43 @@ class App(Application):
             pass
 
 
-    def prompt(self, subject, detail):
-        return (f"A coloring book page of: {subject}. "
-                f"Black line art on a pure white background, {DETAIL[detail]}. "
-                "Only black outlines: no color, no gray, no shading, no hatching, "
-                "no large filled black areas, no text, no border or frame. "
-                "The whole drawing fits inside the page, portrait orientation.")
+    def remember(self):
+        try:
+            return max(0, int(self.get_configuration_value("remember", DEFAULT_REMEMBER)))
+        except (TypeError, ValueError):
+            return DEFAULT_REMEMBER
+
+
+    def prompt(self, subject, detail, recent):
+        prompt = (f"A coloring book page of: {subject}. "
+                  f"Black line art on a pure white background, {DETAIL[detail]}. "
+                  "Only black outlines: no color, no gray, no shading, no hatching, "
+                  "no large filled black areas, no text, no border or frame. "
+                  "The whole drawing fits inside the page, portrait orientation.")
+        if recent:
+            prompt += ("\n\nRecent pages for this idea, don't repeat them: choose a clearly "
+                       "different character, activity and scene than all of these:\n"
+                       + "\n".join(f"- {item}" for item in recent))
+        prompt += ("\n\nAlong with the image, write one line in English (at most 20 words) "
+                   "saying exactly what you drew: the character and what it is doing.")
+        return prompt
+
+
+    @staticmethod
+    def first_line(text):
+        """The description the model wrote: its first non-empty line, trimmed."""
+        for line in (text or "").splitlines():
+            line = line.strip().strip("*#-\"' ").strip()
+            if line:
+                return line[:200]
+        return ""
 
 
     # --- image generation -------------------------------------------------
 
     def generate(self, provider, model, prompt):
-        """PNG/JPEG bytes from the provider. Raises llm.LLMError."""
+        """(PNG/JPEG bytes, what the model says it drew or "") from the provider.
+        Raises llm.LLMError."""
         if provider not in IMAGE_MODELS:
             name = llm.PROVIDERS.get(provider, {}).get("name", provider)
             raise llm.LLMError(f"{name} can't draw images: choose Google Gemini, OpenAI or OpenRouter in the app's settings")
@@ -201,17 +237,20 @@ class App(Application):
             base_url = base_url[:-len("/openai")]
         data = self.post("gemini", f"{base_url}/models/{model}:generateContent",
                          {"contents": [{"parts": [{"text": prompt}]}],
-                          "generationConfig": {"responseModalities": ["IMAGE"],
+                          "generationConfig": {"responseModalities": ["TEXT", "IMAGE"],
                                                "imageConfig": {"aspectRatio": "3:4"}}},
                          {"Content-Type": "application/json", "x-goog-api-key": key})
         texts = []
+        image = None
         for candidate in data.get("candidates") or []:
             for part in (candidate.get("content") or {}).get("parts") or []:
                 inline = part.get("inlineData") or part.get("inline_data")
-                if inline and inline.get("data"):
-                    return base64.b64decode(inline["data"])
-                if part.get("text"):
+                if inline and inline.get("data") and image is None:
+                    image = base64.b64decode(inline["data"])
+                elif part.get("text") and not part.get("thought"):
                     texts.append(part["text"])
+            if image is not None:
+                return image, "\n".join(texts)
             if candidate.get("finishReason") not in (None, "STOP"):
                 texts.append(candidate["finishReason"])
         block = (data.get("promptFeedback") or {}).get("blockReason")
@@ -224,7 +263,9 @@ class App(Application):
                          {"model": model, "prompt": prompt, "size": "1024x1536", "quality": "medium", "n": 1},
                          {"Content-Type": "application/json", "Authorization": "Bearer " + key})
         try:
-            return base64.b64decode(data["data"][0]["b64_json"])
+            image = data["data"][0]
+            # gpt-image models don't say what they drew; older ones give revised_prompt
+            return base64.b64decode(image["b64_json"]), image.get("revised_prompt") or ""
         except (KeyError, IndexError, TypeError, ValueError) as e:
             raise llm.LLMError("OpenAI didn't draw it: no image in the answer") from e
 
@@ -235,8 +276,10 @@ class App(Application):
                           "modalities": ["image", "text"], "image_config": {"aspect_ratio": "3:4"}},
                          {"Content-Type": "application/json", "Authorization": "Bearer " + key})
         try:
-            url = data["choices"][0]["message"]["images"][0]["image_url"]["url"]
-            return base64.b64decode(url.split(",", 1)[1])
+            message = data["choices"][0]["message"]
+            url = message["images"][0]["image_url"]["url"]
+            text = message.get("content") if isinstance(message.get("content"), str) else ""
+            return base64.b64decode(url.split(",", 1)[1]), text
         except (KeyError, IndexError, TypeError, ValueError) as e:
             raise llm.LLMError(f"OpenRouter didn't draw it: is {model} an image model?") from e
 
