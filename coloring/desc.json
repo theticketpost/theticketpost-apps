@@ -1,7 +1,7 @@
 {
     "name": "coloring",
     "description": "A coloring page drawn by AI from your idea, in clean black lines ready to print. Needs Google Gemini, OpenAI or OpenRouter, the providers that draw images",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "author": "eipporko",
     "render_component": true,
     "refresh_component": true,

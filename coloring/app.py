@@ -182,19 +182,23 @@ class App(Application):
             prompt += ("\n\nRecent pages for this idea, don't repeat them: choose a clearly "
                        "different character, activity and scene than all of these:\n"
                        + "\n".join(f"- {item}" for item in recent))
-        prompt += ("\n\nAlong with the image, write one line in English (at most 20 words) "
-                   "saying exactly what you drew: the character and what it is doing.")
+        prompt += ("\n\nAlong with the image, write exactly one line in English that starts "
+                   "with \"Drawn:\" and says in at most 20 words what you drew: the character "
+                   "and what it is doing. For example: \"Drawn: a goblin knitting a scarf by the fire\".")
         return prompt
 
 
     @staticmethod
     def first_line(text):
-        """The description the model wrote: its first non-empty line, trimmed."""
-        for line in (text or "").splitlines():
-            line = line.strip().strip("*#-\"' ").strip()
-            if line:
-                return line[:200]
-        return ""
+        """The description the model wrote: its "Drawn:" line. Without one, all
+        it wrote (models add things like "Here is your coloring page!")."""
+        lines = [line.strip().strip("*#-\"' ").strip() for line in (text or "").splitlines()]
+        lines = [line for line in lines if line]
+        for line in lines:
+            label, _, rest = line.partition(":")
+            if label.strip("*_ ").lower() == "drawn" and rest.strip(" *_\"'"):
+                return rest.strip(" *_\"'")[:200]
+        return " ".join(lines)[:200]
 
 
     # --- image generation -------------------------------------------------
