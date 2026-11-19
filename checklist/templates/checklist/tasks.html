@@ -21,17 +21,29 @@
         font: 16px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
     }
     main { max-width: 560px; margin: 0 auto; padding: 24px 16px 48px; }
-    h1 { font-size: 22px; margin: 0 0 4px; }
+    .app { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 12px; }
+    .row { display: flex; gap: 8px; align-items: center; }
+    .lists { margin-bottom: 8px; }
+    h1 { flex: 1; min-width: 0; font-size: 22px; margin: 0 0 4px; overflow-wrap: anywhere; }
     .sub { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
-    form { display: flex; gap: 8px; margin-bottom: 20px; }
-    input[type=text] {
+    input[type=text], select {
         flex: 1; min-width: 0; padding: 10px 12px; font: inherit; color: var(--text);
         background: var(--card); border: 1px solid var(--line); border-radius: 8px;
     }
-    button.add {
-        padding: 10px 16px; font: inherit; font-weight: 600; border: 0; border-radius: 8px;
-        background: var(--accent); color: var(--bg); cursor: pointer;
+    button { font: inherit; cursor: pointer; }
+    .primary {
+        flex: none; padding: 10px 16px; font-weight: 600; border: 0; border-radius: 8px;
+        background: var(--accent); color: var(--bg);
     }
+    .ghost {
+        flex: none; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
+        background: var(--card); color: var(--text);
+    }
+    .ghost.danger { color: var(--danger); }
+    .ghost.danger.armed { background: var(--danger); border-color: var(--danger); color: #FFFFFF; }
+    form { margin: 0; }
+    .heading { margin-top: 16px; align-items: flex-start; }
+    #new-list { margin-bottom: 8px; }
     h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 24px 0 8px; }
     ul { list-style: none; margin: 0; padding: 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
     li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-top: 1px solid var(--line); }
@@ -40,26 +52,37 @@
     .text { flex: 1; min-width: 0; overflow-wrap: anywhere; cursor: text; border-radius: 4px; padding: 2px 4px; margin: -2px -4px; }
     .text:hover, .text:focus-visible { background: var(--bg); outline: none; }
     li.done .text { text-decoration: line-through; color: var(--muted); }
-    li input.edit { flex: 1; min-width: 0; padding: 4px 8px; margin: -5px -9px; font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--accent); border-radius: 6px; }
-    .del { flex: none; border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 20px; line-height: 1; padding: 4px 6px; }
+    li input.edit { flex: 1; min-width: 0; padding: 4px 8px; margin: -5px -9px; border-color: var(--accent); border-radius: 6px; }
+    .del { flex: none; border: 0; background: none; color: var(--muted); font-size: 20px; line-height: 1; padding: 4px 6px; }
     .del:hover { color: var(--danger); }
     .empty { color: var(--muted); font-size: 14px; padding: 12px; }
-    .switch { display: flex; gap: 8px; align-items: center; margin: 0 0 16px; font-size: 14px; color: var(--muted); }
-    .switch select, .switch input { flex: 1; min-width: 0; padding: 8px 10px; font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
-    .error { color: var(--danger); font-size: 14px; min-height: 1.4em; }
+    .error { color: var(--danger); font-size: 14px; min-height: 1.4em; margin: 8px 0 0; }
+    [hidden] { display: none !important; }
 </style>
 </head>
 <body>
 <main>
-    <h1 id="title"></h1>
-    <label class="switch">List
-        <select id="lists" aria-label="List"></select>
-    </label>
-    <p class="sub">A section prints the list named in its “List” option. Done tasks print crossed out on the next ticket, then go away. The section isn't printed when nothing is pending. Tap a task to change its text.</p>
+    <p class="app">Checklist</p>
 
-    <form id="add">
+    <div class="row lists">
+        <select id="lists" aria-label="List"></select>
+        <button type="button" class="ghost" id="new-list-button">New list</button>
+    </div>
+    <form id="new-list" class="row" hidden>
+        <input type="text" id="new-list-name" maxlength="60" placeholder="Name of the new list" aria-label="Name of the new list" autocomplete="off">
+        <button type="submit" class="primary">Create</button>
+        <button type="button" class="ghost" id="new-list-cancel">Cancel</button>
+    </form>
+
+    <div class="row heading">
+        <h1 id="title"></h1>
+        <button type="button" class="ghost danger" id="delete-list">Delete list</button>
+    </div>
+    <p class="sub">Pick this list in a section's inspector to print it. Done tasks print crossed out on the next ticket, then go away. The section isn't printed when nothing is pending. Tap a task to change its text.</p>
+
+    <form id="add" class="row">
         <input type="text" id="text" maxlength="200" placeholder="New task" aria-label="New task" autocomplete="off" required>
-        <button class="add" type="submit">Add</button>
+        <button class="primary" type="submit">Add</button>
     </form>
     <p class="error" id="error" role="alert"></p>
 
@@ -72,9 +95,9 @@
 
 <script>
 const API = {{ api|tojson }};
-const NEW_LIST = '\u0000new';
 let list = {{ list_name|tojson }};
-const error = document.getElementById('error');
+const $ = (id) => document.getElementById(id);
+const error = $('error');
 
 async function call(action, body) {
     error.textContent = '';
@@ -82,19 +105,76 @@ async function call(action, body) {
         const response = await fetch(API + '/' + action + (body === undefined ? '?list=' + encodeURIComponent(list) : ''), body === undefined ? {} : {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...body, list }),
+            body: JSON.stringify({ list, ...body }),
         });
         if (!response.ok) throw new Error(response.status);
         const data = await response.json();
         list = data.list;
-        render(data.tasks);
+        history.replaceState(null, '', '?list=' + encodeURIComponent(list));
         renderLists(data.lists);
+        render(data.tasks);
         return true;
     } catch (e) {
         error.textContent = 'Could not reach the service. Try again.';
         return false;
     }
 }
+
+// ---- lists ----
+
+function renderLists(names) {
+    // a list not created yet (from a link) shows too; adding a task creates it
+    if (!names.includes(list)) names = [...names, list].sort((a, b) => a.localeCompare(b));
+    $('lists').replaceChildren(...names.map(name => new Option(name, name, false, name === list)));
+    $('title').textContent = list;
+    document.title = list + ' · Checklist';
+    disarmDelete();
+}
+
+$('lists').addEventListener('change', (event) => {
+    list = event.target.value;
+    call('list');
+});
+
+function showNewList(show) {
+    $('new-list').hidden = !show;
+    $('new-list-button').hidden = show;
+    if (show) $('new-list-name').focus();
+    else $('new-list-name').value = '';
+}
+
+$('new-list-button').addEventListener('click', () => showNewList(true));
+$('new-list-cancel').addEventListener('click', () => showNewList(false));
+$('new-list').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const name = $('new-list-name').value.trim();
+    if (!name) return;
+    if (await call('create_list', { list: name })) {
+        showNewList(false);
+        $('text').focus();
+    }
+});
+
+// deleting asks for a second tap instead of a browser dialog
+let deleteTimer = null;
+function disarmDelete() {
+    clearTimeout(deleteTimer);
+    $('delete-list').classList.remove('armed');
+    $('delete-list').textContent = 'Delete list';
+}
+$('delete-list').addEventListener('click', () => {
+    const button = $('delete-list');
+    if (!button.classList.contains('armed')) {
+        button.classList.add('armed');
+        button.textContent = 'Tap again to delete';
+        deleteTimer = setTimeout(disarmDelete, 4000);
+        return;
+    }
+    disarmDelete();
+    call('delete_list', {});
+});
+
+// ---- tasks ----
 
 function item(task) {
     const li = document.createElement('li');
@@ -145,64 +225,27 @@ function editText(task, text) {
     }, { once: true });
 }
 
-function fill(list, tasks, emptyText) {
-    list.replaceChildren(...tasks.map(item));
+function fill(ul, tasks, emptyText) {
+    ul.replaceChildren(...tasks.map(item));
     if (!tasks.length && emptyText) {
         const li = document.createElement('li');
         li.className = 'empty';
         li.textContent = emptyText;
-        list.append(li);
+        ul.append(li);
     }
 }
 
 function render(tasks) {
     const done = tasks.filter(task => task.done);
-    fill(document.getElementById('pending'), tasks.filter(task => !task.done), 'Nothing pending.');
-    fill(document.getElementById('done'), done);
-    document.getElementById('done').hidden = !done.length;
-    document.getElementById('done-title').hidden = !done.length;
+    fill($('pending'), tasks.filter(task => !task.done), 'Nothing pending.');
+    fill($('done'), done);
+    $('done').hidden = !done.length;
+    $('done-title').hidden = !done.length;
 }
 
-function renderLists(names) {
-    document.getElementById('title').textContent = list;
-    document.title = list + ' · Checklist';
-    const select = document.getElementById('lists');
-    const options = names.map(name => new Option(name, name, false, name === list));
-    options.push(new Option('New list…', NEW_LIST));
-    select.replaceChildren(...options);
-}
-
-function openList(name) {
-    list = name;
-    history.replaceState(null, '', '?list=' + encodeURIComponent(name));
-    call('list');
-}
-
-document.getElementById('lists').addEventListener('change', (event) => {
-    let name = event.target.value;
-    if (name === NEW_LIST) {
-        // not prompt(): an inline field is friendlier on phones
-        name = '';
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = 'List name, then Enter';
-        input.setAttribute('aria-label', 'New list name');
-        event.target.replaceWith(input);
-        input.focus();
-        const done = () => {
-            input.replaceWith(event.target);
-            if (input.value.trim()) openList(input.value.trim()); else event.target.value = list;
-        };
-        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } });
-        input.addEventListener('blur', done, { once: true });
-        return;
-    }
-    openList(name);
-});
-
-document.getElementById('add').addEventListener('submit', async (event) => {
+$('add').addEventListener('submit', async (event) => {
     event.preventDefault();
-    const input = document.getElementById('text');
+    const input = $('text');
     const text = input.value.trim();
     if (!text) return;
     if (await call('add', { text })) input.value = '';

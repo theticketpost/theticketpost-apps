@@ -66,6 +66,16 @@ An inspector field of type `textarea` is a multi-line text box (theticketpost-se
 { "type": "textarea", "label": "AI editor: editorial line", "name": "editorial", "value": "", "help": "What matters to you", "placeholder": "Local news first..." }
 ```
 
+## Links in the inspector
+
+An inspector field of type `link` is a button that opens `url` in a new tab (theticketpost-service 1.5.0 or later; older versions don't show it). `{name}` in the url is replaced by the current value of the inspector field with that name:
+
+```json
+{ "type": "link", "label": "Create and manage lists", "name": "manage", "value": "", "url": "/api/apps/checklist/tasks?list={list}" }
+```
+
+The options of a `select` can also change with the app's data: override `get_inspector_json` to fill them in, since the editor asks for the inspector each time a section is selected (checklist lists its lists this way).
+
 ## Nothing to show today
 
 When a component has nothing relevant to print (a calendar with no events, a feed with no news), put `data-ttp-empty` on an element of its HTML:

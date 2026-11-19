@@ -8,6 +8,7 @@ from theticketpost.application import Application
 from flask import render_template, request, jsonify, abort
 from loguru import logger
 from urllib.parse import quote
+import copy
 import datetime
 import json
 import threading
@@ -18,10 +19,11 @@ DEFAULT_LIST = "To do"
 
 
 class App(Application):
-    """To-do lists kept in state.json, by name. Each section picks its list in
-    the inspector ("List") and links to the app's own page to edit it
-    (/api/apps/checklist/tasks?list=<name>). A task ticked off on day D still
-    prints, crossed out, on D and D+1, and is gone from D+2."""
+    """To-do lists kept in state.json, by name. Lists are created, filled and
+    deleted from the app's own page (/api/apps/checklist/tasks?list=<name>);
+    each section picks one in the inspector, whose options are the lists that
+    exist. A task ticked off on day D still prints, crossed out, on D and D+1,
+    and is gone from D+2."""
 
     def __init__(self, desc, flaskApp):
         Application.__init__(self, __name__, __file__, desc, flaskApp)
@@ -38,7 +40,23 @@ class App(Application):
         handlers['toggle'] = (self.toggle_task, ['POST'])
         handlers['edit'] = (self.edit_task, ['POST'])
         handlers['delete'] = (self.delete_task, ['POST'])
+        handlers['create_list'] = (self.create_list, ['POST'])
+        handlers['delete_list'] = (self.delete_list, ['POST'])
         return handlers
+
+
+    def get_inspector_json(self):
+        """The "List" options are the lists there are now. The editor asks for
+        them each time a section is selected."""
+        with self.lock:
+            names = self.sorted_names(self.current_lists())
+        template = copy.deepcopy(self.desc["inspector_template"])
+        for item in template:
+            if item.get("name") == "list":
+                item["options"] = [{"value": name, "description": name} for name in names]
+                if item.get("value") not in names:
+                    item["value"] = names[0]
+        return jsonify({"refresh_component": self.desc["refresh_component"], "config": template})
 
 
     # ---- state ----
@@ -85,8 +103,11 @@ class App(Application):
         return lists
 
 
+    def sorted_names(self, lists):
+        return sorted(lists, key=str.casefold) or [DEFAULT_LIST]
+
+
     def save_lists(self, lists):
-        lists = {name: tasks for name, tasks in lists.items() if tasks}
         tmp = self.state_path + ".tmp"
         try:
             with open(tmp, "w") as f:
@@ -151,18 +172,39 @@ class App(Application):
 
     def tasks_page(self):
         return render_template('checklist/tasks.html', api='/api/apps/' + self.name,
-                               list_name=self.list_name(request.args.get("list")))
+                               list_name=request.args.get("list", ""))
 
 
     def answer(self, lists, name):
-        names = sorted(set(lists) | {name}, key=str.casefold)
-        return jsonify({"list": name, "lists": names, "tasks": lists.get(name, [])})
+        return jsonify({"list": name, "exists": name in lists,
+                        "lists": self.sorted_names(lists), "tasks": lists.get(name, [])})
 
 
     def list_tasks(self):
-        name = self.list_name(request.args.get("list"))
         with self.lock:
-            return self.answer(self.current_lists(), name)
+            lists = self.current_lists()
+            # no list asked for: the first one there is
+            name = request.args.get("list", "").strip()
+            name = self.list_name(name) if name else self.sorted_names(lists)[0]
+            return self.answer(lists, name)
+
+
+    def create_list(self):
+        name = self.list_name(self.body().get("list"))
+        with self.lock:
+            lists = self.current_lists()
+            lists.setdefault(name, [])
+            self.save_lists(lists)
+            return self.answer(lists, name)
+
+
+    def delete_list(self):
+        name = self.list_name(self.body().get("list"))
+        with self.lock:
+            lists = self.current_lists()
+            lists.pop(name, None)
+            self.save_lists(lists)
+            return self.answer(lists, self.sorted_names(lists)[0])
 
 
     def body(self):
