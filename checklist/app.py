@@ -36,6 +36,7 @@ class App(Application):
         handlers['list'] = (self.list_tasks, ['GET'])
         handlers['add'] = (self.add_task, ['POST'])
         handlers['toggle'] = (self.toggle_task, ['POST'])
+        handlers['edit'] = (self.edit_task, ['POST'])
         handlers['delete'] = (self.delete_task, ['POST'])
         return handlers
 
@@ -51,6 +52,18 @@ class App(Application):
         return name or DEFAULT_LIST
 
 
+    def tidy(self, text):
+        """One line, single spaces, starting with a capital letter (after any
+        leading "¿" or "¡")."""
+        text = " ".join(str(text or "").split())[:200]
+        for i, char in enumerate(text):
+            if char.isalpha():
+                return text[:i] + char.upper() + text[i + 1:]
+            if char.isalnum():
+                break
+        return text
+
+
     def load_lists(self):
         try:
             with open(self.state_path) as f:
@@ -63,8 +76,13 @@ class App(Application):
         # 1.0.0 kept a single list
         if isinstance(state.get("tasks"), list):
             lists.setdefault(DEFAULT_LIST, []).extend(state["tasks"])
-        return {name: [task for task in tasks if isinstance(task, dict) and task.get("id")]
-                for name, tasks in lists.items() if isinstance(tasks, list)}
+        lists = {name: [task for task in tasks if isinstance(task, dict) and task.get("id")]
+                 for name, tasks in lists.items() if isinstance(tasks, list)}
+        # tasks saved before they were tidied
+        for tasks in lists.values():
+            for task in tasks:
+                task["text"] = self.tidy(task.get("text"))
+        return lists
 
 
     def save_lists(self, lists):
@@ -155,12 +173,12 @@ class App(Application):
     def add_task(self):
         data = self.body()
         name = self.list_name(data.get("list"))
-        text = " ".join(str(data.get("text", "")).split())
+        text = self.tidy(data.get("text"))
         if not text:
             abort(400)
         with self.lock:
             lists = self.current_lists()
-            lists.setdefault(name, []).append({"id": uuid.uuid4().hex, "text": text[:200],
+            lists.setdefault(name, []).append({"id": uuid.uuid4().hex, "text": text,
                                                "created": self.today().isoformat(), "done": None})
             self.save_lists(lists)
             return self.answer(lists, name)
@@ -175,6 +193,22 @@ class App(Application):
             if task is None:
                 abort(404)
             task["done"] = self.today().isoformat() if data.get("done") else None
+            self.save_lists(lists)
+            return self.answer(lists, name)
+
+
+    def edit_task(self):
+        data = self.body()
+        name = self.list_name(data.get("list"))
+        text = self.tidy(data.get("text"))
+        if not text:
+            abort(400)
+        with self.lock:
+            lists = self.current_lists()
+            task = next((task for task in lists.get(name, []) if task["id"] == data.get("id")), None)
+            if task is None:
+                abort(404)
+            task["text"] = text
             self.save_lists(lists)
             return self.answer(lists, name)
 

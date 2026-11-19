@@ -36,9 +36,11 @@
     ul { list-style: none; margin: 0; padding: 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
     li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-top: 1px solid var(--line); }
     li:first-child { border-top: 0; }
-    li label { flex: 1; display: flex; align-items: center; gap: 12px; cursor: pointer; min-width: 0; overflow-wrap: anywhere; }
-    li input[type=checkbox] { width: 20px; height: 20px; flex: none; accent-color: var(--accent); }
-    li.done label span { text-decoration: line-through; color: var(--muted); }
+    li input[type=checkbox] { width: 20px; height: 20px; flex: none; margin: 0; accent-color: var(--accent); cursor: pointer; }
+    .text { flex: 1; min-width: 0; overflow-wrap: anywhere; cursor: text; border-radius: 4px; padding: 2px 4px; margin: -2px -4px; }
+    .text:hover, .text:focus-visible { background: var(--bg); outline: none; }
+    li.done .text { text-decoration: line-through; color: var(--muted); }
+    li input.edit { flex: 1; min-width: 0; padding: 4px 8px; margin: -5px -9px; font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--accent); border-radius: 6px; }
     .del { flex: none; border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 20px; line-height: 1; padding: 4px 6px; }
     .del:hover { color: var(--danger); }
     .empty { color: var(--muted); font-size: 14px; padding: 12px; }
@@ -53,7 +55,7 @@
     <label class="switch">List
         <select id="lists" aria-label="List"></select>
     </label>
-    <p class="sub">A section prints the list named in its “List” option. Done tasks print crossed out on the next ticket, then go away. The section isn't printed when nothing is pending.</p>
+    <p class="sub">A section prints the list named in its “List” option. Done tasks print crossed out on the next ticket, then go away. The section isn't printed when nothing is pending. Tap a task to change its text.</p>
 
     <form id="add">
         <input type="text" id="text" maxlength="200" placeholder="New task" aria-label="New task" autocomplete="off" required>
@@ -97,14 +99,19 @@ async function call(action, body) {
 function item(task) {
     const li = document.createElement('li');
     if (task.done) li.className = 'done';
-    const label = document.createElement('label');
     const check = document.createElement('input');
     check.type = 'checkbox';
     check.checked = !!task.done;
+    check.setAttribute('aria-label', (task.done ? 'Mark as pending: ' : 'Mark as done: ') + task.text);
     check.addEventListener('change', () => call('toggle', { id: task.id, done: check.checked }));
     const text = document.createElement('span');
+    text.className = 'text';
     text.textContent = task.text;
-    label.append(check, text);
+    text.tabIndex = 0;
+    text.title = 'Edit';
+    text.setAttribute('role', 'button');
+    text.addEventListener('click', () => editText(task, text));
+    text.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); editText(task, text); } });
     const del = document.createElement('button');
     del.className = 'del';
     del.type = 'button';
@@ -112,8 +119,30 @@ function item(task) {
     del.title = 'Delete';
     del.setAttribute('aria-label', 'Delete ' + task.text);
     del.addEventListener('click', () => call('delete', { id: task.id }));
-    li.append(label, del);
+    li.append(check, text, del);
     return li;
+}
+
+function editText(task, text) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'edit';
+    input.maxLength = 200;
+    input.value = task.text;
+    input.setAttribute('aria-label', 'Task text');
+    text.replaceWith(input);
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+    let cancelled = false;
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        if (e.key === 'Escape') { cancelled = true; input.blur(); }
+    });
+    input.addEventListener('blur', () => {
+        const value = input.value.trim();
+        if (cancelled || !value || value === task.text) input.replaceWith(text);
+        else call('edit', { id: task.id, text: value }).then(ok => { if (!ok) input.replaceWith(text); });
+    }, { once: true });
 }
 
 function fill(list, tasks, emptyText) {
