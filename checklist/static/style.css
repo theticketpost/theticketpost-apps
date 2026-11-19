@@ -1,0 +1,60 @@
+.checklist {
+    width: 100%;
+}
+
+.checklist_title {
+    margin: 0 0 6px 0;
+    text-align: center;
+}
+
+.checklist_list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.checklist_item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 3px 0;
+}
+
+.checklist_box {
+    flex: none;
+    position: relative;
+    width: 0.9em;
+    height: 0.9em;
+    margin-top: 0.15em;
+    border: 2px solid #000;
+}
+
+/* done: a cross in the box and the text struck through */
+.checklist_item.done .checklist_box::before,
+.checklist_item.done .checklist_box::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -15%;
+    width: 2px;
+    height: 130%;
+    background: #000;
+}
+
+.checklist_item.done .checklist_box::before { transform: translateX(-50%) rotate(45deg); }
+.checklist_item.done .checklist_box::after { transform: translateX(-50%) rotate(-45deg); }
+
+.checklist_item.done .checklist_text {
+    text-decoration: line-through;
+}
+
+.checklist_empty {
+    margin: 0;
+    text-align: center;
+}
+
+.checklist_edit {
+    margin: 6px 0 0 0;
+    text-align: center;
+    font-size: 14px;
+}

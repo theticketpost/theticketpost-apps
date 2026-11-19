@@ -1,0 +1,20 @@
+<link rel="stylesheet" href="{{ style_url }}">
+<div class="checklist">
+  {% if not pending %}
+  {# data-ttp-empty: nothing pending, the service leaves the section out of the print #}
+  <p class="checklist_empty" data-ttp-empty>No pending tasks.</p>
+  {% else %}
+  {% if title %}<h3 class="checklist_title">{{ title }}</h3>{% endif %}
+  <ul class="checklist_list">
+    {% for task in pending %}
+    <li class="checklist_item"><span class="checklist_box"></span><span class="checklist_text">{{ task.text }}</span></li>
+    {% endfor %}
+    {% for task in done %}
+    <li class="checklist_item done"><span class="checklist_box"></span><span class="checklist_text">{{ task.text }}</span></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if not printing %}
+  <p class="checklist_edit"><a href="{{ tasks_url }}" target="_blank" rel="noopener">Edit tasks · {{ list_name }}</a></p>
+  {% endif %}
+</div>
